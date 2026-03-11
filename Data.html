@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Inversion</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    color: #e8e4df;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+  }
+
+  .scroll-container {
+    position: relative;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .text-block {
+    max-width: 640px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+    pointer-events: auto;
+  }
+
+  .text-block.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .text-block h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 1.2rem;
+    color: #fff;
+  }
+
+  .text-block h1 em {
+    font-style: italic;
+    color: #f59e0b;
+  }
+
+  .text-block p {
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    line-height: 1.7;
+    color: #a09b94;
+    font-weight: 300;
+  }
+
+  .text-block .source {
+    font-size: 0.75rem;
+    color: #5a5650;
+    margin-top: 1rem;
+    font-style: italic;
+  }
+
+  .text-block .stat {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    color: #f59e0b;
+    font-weight: 700;
+    display: block;
+    margin: 0.5rem 0;
+  }
+
+  .section-intro { min-height: 100vh; }
+  .section-enjoy { min-height: 130vh; }
+  .section-transition { min-height: 80vh; }
+  .section-reality { min-height: 130vh; }
+  .section-gap { min-height: 100vh; }
+  .section-close { min-height: 100vh; }
+
+  .legend {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    z-index: 3;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    font-size: 0.7rem;
+    pointer-events: none;
+  }
+
+  .legend.visible { opacity: 1; }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #7a756e;
+  }
+
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  .labels-container {
+    position: fixed;
+    bottom: 3.5rem;
+    left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    z-index: 3;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+
+  .labels-container.visible { opacity: 1; }
+
+  .col-label {
+    text-align: center;
+    font-size: 0.65rem;
+    color: #5a5650;
+    line-height: 1.3;
+    transition: color 0.3s;
+  }
+
+  .col-label .time-val {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 2px;
+    color: #a09b94;
+  }
+
+  .scroll-hint {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    opacity: 0;
+    transition: opacity 0.5s;
+    font-size: 0.75rem;
+    color: #5a5650;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    animation: bobDown 2s ease-in-out infinite;
+  }
+
+  .scroll-hint.visible { opacity: 1; }
+
+  @keyframes bobDown {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(6px); }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<div class="scroll-container">
+  <div class="section section-intro" data-scene="0">
+    <div class="text-block" id="tb0">
+      <h1>We know what makes us <em>feel alive</em></h1>
+      <p>When asked to rate how much they enjoy different activities, people consistently rank sports, hobbies, socializing, and creative pursuits at the top.</p>
+      <p style="margin-top:0.8rem;">Yet evening after evening, most leisure hours flow somewhere else entirely.</p>
+      <span class="source">Data: UK Time Use Survey 2014–15 &amp; U.S. Bureau of Labor Statistics 2024</span>
+    </div>
+  </div>
+
+  <div class="section section-enjoy" data-scene="1">
+    <div class="text-block" id="tb1">
+      <h1>If enjoyment <em>guided</em> our choices</h1>
+      <p>Each dot below is one minute of a typical 5-hour evening. Here they're distributed proportionally to how much people actually enjoy each activity.</p>
+      <p style="margin-top:0.8rem;">The spread is nearly even — because enjoyment ratings are remarkably similar across active and passive leisure.</p>
+      <span class="source">Enjoyment scale: 1–7 · UK Time Use Survey via Our World in Data</span>
+    </div>
+  </div>
+
+  <div class="section section-transition" data-scene="2">
+    <div class="text-block" id="tb2">
+      <h1>Now watch what <em>actually</em> happens</h1>
+      <p>Same 300 minutes. Same evening. But allocated by how people actually spend their time.</p>
+    </div>
+  </div>
+
+  <div class="section section-reality" data-scene="3">
+    <div class="text-block" id="tb3">
+      <h1><span class="stat">55%</span></h1>
+      <p>of the average evening is consumed by TV and streaming — the activity rated <em>less enjoyable</em> than almost every alternative.</p>
+      <p style="margin-top:0.8rem;">Sports, hobbies, and arts — the highest-rated experiences — share just 12% of the time between them.</p>
+      <span class="source">Time allocation: American Time Use Survey, BLS 2024</span>
+    </div>
+  </div>
+
+  <div class="section section-gap" data-scene="4">
+    <div class="text-block" id="tb4">
+      <h1>The <em>intention–action</em> gap</h1>
+      <p>"High-flow activities require more initial motivation because they require skill and concentration. In other words, high-flow activities are work — but work that pays off."</p>
+      <p style="margin-top:0.8rem;">The friction isn't in the enjoyment. It's in the <em>starting</em>.</p>
+      <span class="source">Csikszentmihalyi &amp; LeFevre, 1989 · via research synthesis</span>
+    </div>
+  </div>
+
+  <div class="section section-close" data-scene="5">
+    <div class="text-block" id="tb5">
+      <h1>Every dot is a <em>minute</em> you could reclaim</h1>
+      <p>Compulsive phone use might be a sign of the lack of a well-developed leisure life. The answer may not be more willpower — but a "Leisure Menu" of pre-selected activities ready for the moment energy is low.</p>
+      <span class="source">Research: Intentional Leisure &amp; the Friction Gap, 2025</span>
+    </div>
+  </div>
+</div>
+
+<div class="legend" id="legend"></div>
+<div class="labels-container" id="colLabels"></div>
+<div class="scroll-hint" id="scrollHint">Scroll to explore ↓</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H, dpr;
+
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.scale(dpr, dpr);
+}
+resize();
+window.addEventListener('resize', () => { resize(); computeTargets(); });
+
+const activities = [
+  { name: "TV & Streaming", enjoyment: 5.9, hours: 2.8, color: "#6366f1", type: "passive" },
+  { name: "Socializing",    enjoyment: 6.1, hours: 0.6, color: "#f59e0b", type: "active" },
+  { name: "Games",          enjoyment: 6.25, hours: 0.5, color: "#10b981", type: "active" },
+  { name: "Sports & Exercise", enjoyment: 6.1, hours: 0.3, color: "#ef4444", type: "active" },
+  { name: "Reading",        enjoyment: 5.95, hours: 0.3, color: "#8b5cf6", type: "active" },
+  { name: "Hobbies",        enjoyment: 6.15, hours: 0.2, color: "#ec4899", type: "active" },
+  { name: "Relaxing",       enjoyment: 5.85, hours: 0.3, color: "#94a3b8", type: "passive" },
+  { name: "Arts & Music",   enjoyment: 6.0,  hours: 0.1, color: "#06b6d4", type: "active" },
+];
+
+const TOTAL_DOTS = 300;
+
+function distribute(key) {
+  const total = activities.reduce((s, a) => s + a[key], 0);
+  const raw = activities.map(a => (a[key] / total) * TOTAL_DOTS);
+  const floored = raw.map(Math.floor);
+  let remainder = TOTAL_DOTS - floored.reduce((s, v) => s + v, 0);
+  const fracs = raw.map((v, i) => ({ i, f: v - floored[i] })).sort((a, b) => b.f - a.f);
+  for (let k = 0; k < remainder; k++) floored[fracs[k].i]++;
+  return floored;
+}
+
+const enjoyDist = distribute('enjoyment');
+const realDist = distribute('hours');
+
+// Build legend
+const legendEl = document.getElementById('legend');
+activities.forEach(a => {
+  const d = document.createElement('div');
+  d.className = 'legend-item';
+  d.innerHTML = `<span class="legend-dot" style="background:${a.color}"></span>${a.name}`;
+  legendEl.appendChild(d);
+});
+
+// Particles
+const particles = [];
+for (let i = 0; i < TOTAL_DOTS; i++) {
+  particles.push({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    tx: W / 2,
+    ty: H / 2,
+    color: '#333',
+    actIdx: 0,
+    radius: Math.min(W, H) < 600 ? 2.5 : 3.5,
+    vx: (Math.random() - 0.5) * 0.5,
+    vy: (Math.random() - 0.5) * 0.5,
+  });
+}
+
+let currentScene = -1;
+let sceneProgress = 0;
+
+function assignParticles(dist) {
+  let idx = 0;
+  for (let a = 0; a < activities.length; a++) {
+    for (let d = 0; d < dist[a]; d++) {
+      if (idx < particles.length) {
+        particles[idx].actIdx = a;
+        particles[idx].color = activities[a].color;
+        idx++;
+      }
+    }
+  }
+}
+
+function computeTargets() {
+  const colW = W / activities.length;
+  const dotR = particles[0].radius;
+  const spacing = dotR * 2.6;
+  const baseY = H - 80;
+  const maxDotsPerRow = Math.max(1, Math.floor((colW - 10) / spacing));
+
+  const counts = new Array(activities.length).fill(0);
+
+  for (let i = 0; i < particles.length; i++) {
+    const a = particles[i].actIdx;
+    const col = a;
+    const n = counts[a];
+    const row = Math.floor(n / maxDotsPerRow);
+    const posInRow = n % maxDotsPerRow;
+    const rowWidth = Math.min(maxDotsPerRow, (currentScene <= 1 ? enjoyDist : realDist)[a] - row * maxDotsPerRow) * spacing;
+
+    const cx = colW * col + colW / 2;
+    const startX = cx - rowWidth / 2 + dotR;
+
+    particles[i].tx = startX + posInRow * spacing;
+    particles[i].ty = baseY - row * spacing;
+    counts[a]++;
+  }
+}
+
+function setScene(s) {
+  if (s === currentScene) return;
+  currentScene = s;
+
+  const labelsEl = document.getElementById('colLabels');
+
+  if (s === 0) {
+    // Scatter
+    for (let p of particles) {
+      p.tx = Math.random() * W;
+      p.ty = Math.random() * H;
+      p.color = `hsl(${220 + Math.random() * 20}, 20%, ${20 + Math.random() * 15}%)`;
+    }
+    legendEl.classList.remove('visible');
+    labelsEl.classList.remove('visible');
+  } else if (s === 1) {
+    assignParticles(enjoyDist);
+    computeTargets();
+    legendEl.classList.add('visible');
+    buildLabels(enjoyDist, 'enjoyment');
+    labelsEl.classList.add('visible');
+  } else if (s === 2) {
+    // transition - start morphing
+    assignParticles(realDist);
+    computeTargets();
+    legendEl.classList.add('visible');
+    buildLabels(realDist, 'hours');
+    labelsEl.classList.add('visible');
+  } else if (s === 3) {
+    assignParticles(realDist);
+    computeTargets();
+    legendEl.classList.add('visible');
+    buildLabels(realDist, 'hours');
+    labelsEl.classList.add('visible');
+  } else if (s === 4) {
+    // slope chart mode
+    legendEl.classList.add('visible');
+    labelsEl.classList.remove('visible');
+    buildSlopeTargets();
+  } else if (s === 5) {
+    // scatter outward / bloom
+    for (let p of particles) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 50 + Math.random() * Math.min(W, H) * 0.35;
+      p.tx = W / 2 + Math.cos(angle) * dist;
+      p.ty = H / 2 + Math.sin(angle) * dist;
+    }
+    legendEl.classList.add('visible');
+    labelsEl.classList.remove('visible');
+  }
+}
+
+function buildLabels(dist, mode) {
+  const labelsEl = document.getElementById('colLabels');
+  labelsEl.innerHTML = '';
+  const colW = W / activities.length;
+  activities.forEach((a, i) => {
+    const div = document.createElement('div');
+    div.className = 'col-label';
+    div.style.width = colW + 'px';
+    const val = mode === 'hours'
+      ? `${Math.round(dist[i])} min`
+      : `${a.enjoyment}/7`;
+    div.innerHTML = `${a.name}<span class="time-val">${val}</span>`;
+    labelsEl.appendChild(div);
+  });
+}
+
+function buildSlopeTargets() {
+  // Rank by enjoyment and by time
+  const byEnjoy = activities.map((a, i) => ({ i, v: a.enjoyment })).sort((a, b) => b.v - a.v);
+  const byTime = activities.map((a, i) => ({ i, v: a.hours })).sort((a, b) => b.v - a.v);
+
+  const leftX = W * 0.15;
+  const rightX = W * 0.85;
+  const topY = H * 0.15;
+  const botY = H * 0.75;
+  const step = (botY - topY) / (activities.length - 1);
+
+  // Create rank maps
+  const enjoyRank = {};
+  byEnjoy.forEach((item, rank) => { enjoyRank[item.i] = rank; });
+  const timeRank = {};
+  byTime.forEach((item, rank) => { timeRank[item.i] = rank; });
+
+  // Assign particles: for each activity, particles go to a line between left rank and right rank
+  let idx = 0;
+  for (let a = 0; a < activities.length; a++) {
+    const count = realDist[a];
+    const ly = topY + enjoyRank[a] * step;
+    const ry = topY + timeRank[a] * step;
+    for (let d = 0; d < count && idx < particles.length; d++) {
+      const t = count === 1 ? 0.5 : d / (count - 1);
+      particles[idx].tx = leftX + (rightX - leftX) * t;
+      particles[idx].ty = ly + (ry - ly) * t;
+      particles[idx].actIdx = a;
+      particles[idx].color = activities[a].color;
+      idx++;
+    }
+  }
+}
+
+// Scroll handling
+function handleScroll() {
+  const scrollY = window.scrollY;
+  const vh = window.innerHeight;
+  const sections = document.querySelectorAll('.section');
+
+  // Determine current scene
+  let activeScene = 0;
+  sections.forEach((sec, i) => {
+    const rect = sec.getBoundingClientRect();
+    if (rect.top < vh * 0.5 && rect.bottom > vh * 0.3) {
+      activeScene = i;
+    }
+  });
+
+  setScene(activeScene);
+
+  // Show/hide text blocks
+  sections.forEach((sec, i) => {
+    const tb = document.getElementById('tb' + i);
+    if (!tb) return;
+    const rect = sec.getBoundingClientRect();
+    const visible = rect.top < vh * 0.65 && rect.bottom > vh * 0.35;
+    tb.classList.toggle('visible', visible);
+  });
+
+  // Scroll hint
+  const hint = document.getElementById('scrollHint');
+  hint.classList.toggle('visible', scrollY < 50);
+}
+
+window.addEventListener('scroll', handleScroll, { passive: true });
+
+// Animation loop
+function animate() {
+  ctx.clearRect(0, 0, W, H);
+
+  for (let p of particles) {
+    const ease = 0.04;
+    p.x += (p.tx - p.x) * ease;
+    p.y += (p.ty - p.y) * ease;
+
+    // Small jitter for organic feel
+    p.x += (Math.random() - 0.5) * 0.15;
+    p.y += (Math.random() - 0.5) * 0.15;
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = 0.85;
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // Draw slope chart labels if scene 4
+  if (currentScene === 4) {
+    const leftX = W * 0.15;
+    const rightX = W * 0.85;
+    const topY = H * 0.15;
+    const botY = H * 0.75;
+    const step = (botY - topY) / (activities.length - 1);
+
+    const byEnjoy = activities.map((a, i) => ({ i, v: a.enjoyment })).sort((a, b) => b.v - a.v);
+    const byTime = activities.map((a, i) => ({ i, v: a.hours })).sort((a, b) => b.v - a.v);
+
+    ctx.font = `${Math.min(12, W * 0.018)}px Inter, sans-serif`;
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#5a5650';
+    ctx.fillText('Ranked by enjoyment', leftX - 8, topY - 16);
+    ctx.textAlign = 'left';
+    ctx.fillText('Ranked by time spent', rightX + 8, topY - 16);
+
+    byEnjoy.forEach((item, rank) => {
+      const y = topY + rank * step;
+      ctx.textAlign = 'right';
+      ctx.fillStyle = activities[item.i].color;
+      ctx.globalAlpha = 0.7;
+      ctx.fillText(activities[item.i].name, leftX - 10, y + 4);
+    });
+
+    byTime.forEach((item, rank) => {
+      const y = topY + rank * step;
+      ctx.textAlign = 'left';
+      ctx.fillStyle = activities[item.i].color;
+      ctx.globalAlpha = 0.7;
+      ctx.fillText(activities[item.i].name, rightX + 10, y + 4);
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  requestAnimationFrame(animate);
+}
+
+// Init
+setTimeout(() => {
+  setScene(0);
+  document.getElementById('scrollHint').classList.add('visible');
+  document.getElementById('tb0').classList.add('visible');
+}, 300);
+
+animate();
+</script>
+</body>
+</html>
