@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Enjoyment Paradox</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0c0c0c;color:#e8e8e4;font-family:'Inter',-apple-system,sans-serif;min-height:100vh;overflow-x:hidden}
+
+#intro{
+  position:fixed;inset:0;background:#0c0c0c;z-index:1000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px;text-align:center;cursor:pointer;
+  transition:opacity .8s;
+}
+#intro h1{font-size:clamp(28px,5vw,52px);font-weight:900;line-height:1.1;max-width:700px}
+#intro h1 em{color:#e85d4a;font-style:normal}
+#intro p{font-size:14px;color:#555;margin-top:20px;max-width:440px;line-height:1.7}
+#intro .cta{margin-top:36px;padding:12px 28px;border:1px solid #333;border-radius:40px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#666;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{border-color:#333;color:#555}50%{border-color:#666;color:#aaa}}
+
+#app{opacity:0;transition:opacity .8s;padding:0 0 60px}
+#app.visible{opacity:1}
+
+/* header */
+.header{padding:36px 40px 0;max-width:900px;margin:0 auto}
+.eyebrow{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#444;margin-bottom:8px}
+.title{font-size:clamp(20px,3vw,32px);font-weight:800;line-height:1.2;margin-bottom:6px}
+.title em{color:#e85d4a;font-style:normal}
+.subtitle{font-size:12px;color:#555;line-height:1.7;max-width:560px}
+
+/* view toggle */
+.toggle{display:flex;gap:8px;padding:24px 40px 0;max-width:900px;margin:0 auto}
+.t-btn{padding:8px 18px;border-radius:6px;border:1px solid #222;background:transparent;color:#555;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s}
+.t-btn.active{background:#e8e8e4;color:#0c0c0c;border-color:#e8e8e4}
+
+/* main canvas area */
+#canvas-wrap{position:relative;max-width:900px;margin:24px auto 0;padding:0 40px}
+canvas{display:block;width:100%;cursor:crosshair}
+
+/* tooltip */
+#tooltip{
+  position:fixed;pointer-events:none;opacity:0;
+  background:#111;border:1px solid #2a2a2a;border-radius:10px;
+  padding:12px 16px;max-width:220px;z-index:500;
+  transition:opacity .15s;
+}
+#tooltip .t-name{font-size:13px;font-weight:700;margin-bottom:6px}
+#tooltip .t-row{display:flex;justify-content:space-between;gap:16px;font-size:11px;color:#888;margin-bottom:3px}
+#tooltip .t-val{color:#e8e8e4;font-weight:600}
+#tooltip .t-source{font-size:9px;color:#444;margin-top:8px;border-top:1px solid #1e1e1e;padding-top:6px}
+
+/* insight panel */
+#insight-panel{
+  max-width:900px;margin:20px auto 0;padding:0 40px;
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;
+}
+.ins-card{background:#111;border:1px solid #1e1e1e;border-radius:10px;padding:16px 18px}
+.ins-num{font-size:28px;font-weight:900;line-height:1;margin-bottom:4px}
+.ins-label{font-size:10px;color:#555;line-height:1.5}
+
+/* quote */
+.qblock{max-width:900px;margin:20px auto 0;padding:0 40px}
+.qinner{border-left:3px solid #e85d4a;padding:12px 18px;background:rgba(232,93,74,.05);border-radius:0 8px 8px 0}
+.qinner p{font-size:11px;color:#777;font-style:italic;line-height:1.7}
+.qinner cite{font-size:10px;color:#444;margin-top:4px;display:block;font-style:normal}
+
+/* legend */
+.legend{max-width:900px;margin:16px auto 0;padding:0 40px;display:flex;gap:20px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:7px;font-size:10px;color:#555}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+footer{text-align:center;font-size:10px;color:#2a2a2a;padding:32px 0 0}
+
+@media(max-width:600px){
+  .header,.toggle,#canvas-wrap,.qblock,.legend,#insight-panel{padding-left:20px;padding-right:20px}
+  #insight-panel{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="intro">
+  <h1>We spend the most time<br/>on the things we enjoy <em>least.</em></h1>
+  <p>Real data from the UK Time Use Survey, Bureau of Labor Statistics, and Nature (2025) — made visible.</p>
+  <div class="cta">Click to explore →</div>
+</div>
+
+<div id="app">
+  <div class="header">
+    <p class="eyebrow">Data Visualization · Insight 3.1 — Passive Leisure Is the Easiest Option</p>
+    <h2 class="title">The <em>Enjoyment Paradox</em></h2>
+    <p class="subtitle">We default to activities that are easy to start — not activities that make us feel good. This visualization maps real enjoyment scores against real effort levels, and overlays how much time people actually spend on each.</p>
+  </div>
+
+  <div class="toggle">
+    <button class="t-btn active" data-view="scatter">Scatter View</button>
+    <button class="t-btn" data-view="ranked">Ranked by Gap</button>
+    <button class="t-btn" data-view="time">Time Spent View</button>
+  </div>
+
+  <div id="canvas-wrap"><canvas id="c" height="520"></canvas></div>
+
+  <div id="insight-panel">
+    <div class="ins-card">
+      <div class="ins-num" style="color:#e85d4a">2.8h</div>
+      <div class="ins-label">Average daily TV watching — the single biggest leisure activity in the US (BLS 2024)</div>
+    </div>
+    <div class="ins-card">
+      <div class="ins-num" style="color:#4a90d9">6.5/7</div>
+      <div class="ins-label">Enjoyment score for Theatre & Concerts — the highest rated activity people rarely do (UK Time Use Survey)</div>
+    </div>
+    <div class="ins-card">
+      <div class="ins-num" style="color:#4caf7d">0.3h</div>
+      <div class="ins-label">Average daily time spent on sports & exercise — despite its high enjoyment and wellbeing return</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:#e85d4a"></div>Passive / Digital defaults</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#e8b84b"></div>Moderate effort</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#4caf7d"></div>Active / Social</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#4a90d9"></div>Cultural / Creative</div>
+    <div class="leg-item" style="margin-left:auto"><span style="color:#444">● Circle size = daily hours spent (BLS 2024)</span></div>
+  </div>
+
+  <div class="qblock" style="margin-top:16px">
+    <div class="qinner">
+      <p>"High-flow activities require more initial motivation because they do require skill and concentration. In other words, high-flow activities are work — but work that pays off."</p>
+      <cite>— Csikszentmihalyi · Enjoyment data: UK Time Use Survey 2014–15 via OurWorldInData · Effort data: Nature (2025) s44271-025-00292-9 · Time data: BLS American Time Use Survey 2024</cite>
+    </div>
+  </div>
+</div>
+
+<div id="tooltip">
+  <div class="t-name" id="t-name"></div>
+  <div class="t-row"><span>Enjoyment score</span><span class="t-val" id="t-enj"></span></div>
+  <div class="t-row"><span>Effort to start</span><span class="t-val" id="t-eff"></span></div>
+  <div class="t-row"><span>Daily time spent</span><span class="t-val" id="t-time"></span></div>
+  <div class="t-source" id="t-src"></div>
+</div>
+
+<script>
+// ── REAL DATA ──
+// enjoyment: UK Time Use Survey 2014-15 (OurWorldInData) — scale 1-7
+// effort: derived from Nature (2025) Effort/Meaning scatter — normalized 0-100
+// timePerDay: BLS ATUS 2024 — hours/day (0 = negligible)
+// category: passive | moderate | active | cultural
+const DATA = [
+  {name:"Watch TV",        enj:5.5, eff:8,  time:2.8,  cat:"passive",  note:"BLS: largest single leisure activity"},
+  {name:"Social media\nscrolling", enj:4.2, eff:4,  time:1.2,  cat:"passive",  note:"Estimated from screen time data"},
+  {name:"Relax, do nothing",enj:5.7,eff:5,  time:0.5,  cat:"passive",  note:"UK Time Use Survey"},
+  {name:"Online streaming", enj:5.2, eff:6,  time:1.1,  cat:"passive",  note:"DataReportal 2024"},
+  {name:"Reading",         enj:5.9, eff:32, time:0.3,  cat:"moderate", note:"BLS ATUS 2024"},
+  {name:"Walking",         enj:6.0, eff:28, time:0.25, cat:"active",   note:"UK Time Use Survey"},
+  {name:"Cooking",         enj:5.5, eff:38, time:0.4,  cat:"moderate", note:"UK Time Use Survey"},
+  {name:"Play sport",      enj:6.3, eff:72, time:0.18, cat:"active",   note:"UK Time Use Survey"},
+  {name:"Visiting friends",enj:6.4, eff:45, time:0.6,  cat:"active",   note:"UK Time Use Survey"},
+  {name:"Hobbies",         enj:6.4, eff:55, time:0.28, cat:"active",   note:"UK Time Use Survey"},
+  {name:"Parties",         enj:6.3, eff:50, time:0.15, cat:"active",   note:"UK Time Use Survey"},
+  {name:"Theatre / Concert",enj:6.5,eff:68, time:0.05, cat:"cultural", note:"UK Time Use Survey — highest rated"},
+  {name:"Computer games",  enj:6.1, eff:22, time:0.28, cat:"moderate", note:"UK Time Use Survey"},
+  {name:"Go to sport\n(spectate)",enj:6.4,eff:55,time:0.12,cat:"cultural",note:"UK Time Use Survey"},
+  {name:"Restaurant / Pub",enj:6.4, eff:42, time:0.35, cat:"active",   note:"UK Time Use Survey"},
+  {name:"Listen to music", enj:6.1, eff:12, time:0.4,  cat:"moderate", note:"UK Time Use Survey"},
+  {name:"Arts / Musical",  enj:6.2, eff:65, time:0.08, cat:"cultural", note:"UK Time Use Survey"},
+  {name:"Gardening",       enj:5.8, eff:48, time:0.22, cat:"moderate", note:"UK Time Use Survey"},
+  {name:"Social networking\n(active)",enj:5.3,eff:18,time:0.6,cat:"passive",note:"Nature 2025"},
+  {name:"Exercise / Gym",  enj:6.2, eff:75, time:0.3,  cat:"active",   note:"BLS ATUS 2024"},
+];
+
+const CATS = {
+  passive:  {color:"#e85d4a", label:"Passive"},
+  moderate: {color:"#e8b84b", label:"Moderate"},
+  active:   {color:"#4caf7d", label:"Active"},
+  cultural: {color:"#4a90d9", label:"Cultural"},
+};
+
+let view = "scatter";
+let hovIdx = -1;
+let animProgress = 0;
+let animTarget = [];
+let animCurrent = [];
+let rafId;
+
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const tip = document.getElementById('tooltip');
+
+function getW(){ return cv.parentElement.clientWidth; }
+
+function resize(){
+  const dpr = window.devicePixelRatio||1;
+  const w = getW();
+  cv.width = w * dpr;
+  cv.height = 520 * dpr;
+  cv.style.width = w+'px';
+  cv.style.height = '520px';
+  ctx.scale(dpr,dpr);
+  computePositions();
+  render();
+}
+
+function computePositions(){
+  const w = getW(), h = 520;
+  const pad = {l:60, r:30, t:40, b:60};
+  const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+
+  animTarget = DATA.map((d,i) => {
+    let x, y, r;
+    if(view === "scatter"){
+      x = pad.l + (d.eff/100)*pw;
+      y = pad.t + ((7-d.enj)/3)*ph;
+      r = 6 + Math.sqrt(d.time) * 14;
+    } else if(view === "ranked"){
+      // sort by gap: high enjoyment but low time
+      const gap = d.enj - (d.time * 0.8);
+      const sorted = [...DATA].sort((a,b)=>(b.enj-(b.time*0.8))-(a.enj-(a.time*0.8)));
+      const rank = sorted.findIndex(s=>s.name===d.name);
+      const cols = 4;
+      const col = rank % cols;
+      const row = Math.floor(rank / cols);
+      x = pad.l + (col+0.5)*(pw/cols);
+      y = pad.t + 30 + row * (ph / Math.ceil(DATA.length/cols));
+      r = 6 + d.enj * 4;
+    } else {
+      // time view — sorted by time descending, horizontal
+      const sorted = [...DATA].sort((a,b)=>b.time-a.time);
+      const rank = sorted.findIndex(s=>s.name===d.name);
+      x = pad.l + 20 + (rank/(DATA.length-1))*pw * 0.9;
+      y = pad.t + ph - (d.time/3)*ph * 0.85;
+      r = 6 + d.enj * 3.5;
+    }
+    return {x, y, r};
+  });
+
+  if(animCurrent.length === 0){
+    animCurrent = animTarget.map(p=>({...p}));
+  }
+}
+
+function lerp(a,b,t){ return a+(b-a)*t; }
+
+function animateTo(){
+  cancelAnimationFrame(rafId);
+  let start = null;
+  function step(ts){
+    if(!start) start=ts;
+    const t = Math.min((ts-start)/600, 1);
+    const ease = 1-Math.pow(1-t,3);
+    animCurrent = animTarget.map((tgt,i)=>({
+      x: lerp(animCurrent[i].x, tgt.x, ease),
+      y: lerp(animCurrent[i].y, tgt.y, ease),
+      r: lerp(animCurrent[i].r, tgt.r, ease),
+    }));
+    render();
+    if(t<1) rafId=requestAnimationFrame(step);
+  }
+  rafId = requestAnimationFrame(step);
+}
+
+function render(){
+  const w = getW(), h = 520;
+  ctx.clearRect(0,0,w,h);
+  const pad = {l:60, r:30, t:40, b:60};
+  const pw = w-pad.l-pad.r, ph = h-pad.t-pad.b;
+
+  // bg
+  ctx.fillStyle='#0c0c0c';
+  ctx.fillRect(0,0,w,h);
+
+  if(view==="scatter"){
+    drawScatterBg(pad,pw,ph,w,h);
+  } else if(view==="ranked"){
+    drawRankedBg(pad,pw,ph,w,h);
+  } else {
+    drawTimeBg(pad,pw,ph,w,h);
+  }
+
+  // draw connecting line for scatter — the "gap" arrow
+  if(view==="scatter"){
+    // zone labels — bigger, more visible
+    ctx.save();
+
+    // bottom-left: DEFAULT ZONE
+    ctx.font='bold 13px Inter,sans-serif';
+    ctx.fillStyle='rgba(232,93,74,0.85)';
+    ctx.fillText('DEFAULT ZONE', pad.l+10, pad.t+ph-28);
+    ctx.font='10px Inter,sans-serif';
+    ctx.fillStyle='rgba(232,93,74,0.5)';
+    ctx.fillText('Low effort · Low enjoyment', pad.l+10, pad.t+ph-14);
+
+    // top-right: INTENTIONAL ZONE
+    ctx.font='bold 13px Inter,sans-serif';
+    ctx.fillStyle='rgba(74,144,217,0.85)';
+    ctx.textAlign='right';
+    ctx.fillText('INTENTIONAL ZONE', pad.l+pw-10, pad.t+22);
+    ctx.font='10px Inter,sans-serif';
+    ctx.fillStyle='rgba(74,144,217,0.5)';
+    ctx.fillText('High effort · High enjoyment', pad.l+pw-10, pad.t+36);
+
+    // top-left: LOW HANGING FRUIT
+    ctx.textAlign='left';
+    ctx.font='bold 12px Inter,sans-serif';
+    ctx.fillStyle='rgba(232,184,75,0.75)';
+    ctx.fillText('EASY WINS', pad.l+10, pad.t+22);
+    ctx.font='10px Inter,sans-serif';
+    ctx.fillStyle='rgba(232,184,75,0.45)';
+    ctx.fillText('Low effort · High enjoyment', pad.l+10, pad.t+36);
+
+    // bottom-right: HARD + UNREWARDING
+    ctx.textAlign='right';
+    ctx.font='bold 12px Inter,sans-serif';
+    ctx.fillStyle='rgba(120,120,120,0.6)';
+    ctx.fillText('HIGH EFFORT · LOW RETURN', pad.l+pw-10, pad.t+ph-14);
+
+    ctx.restore();
+  }
+
+  // draw dots
+  DATA.forEach((d,i)=>{
+    const {x,y,r} = animCurrent[i];
+    const col = CATS[d.cat].color;
+    const isHov = i===hovIdx;
+
+    // glow
+    if(isHov){
+      const grd = ctx.createRadialGradient(x,y,0,x,y,r*2.5);
+      grd.addColorStop(0, col+'55');
+      grd.addColorStop(1,'transparent');
+      ctx.beginPath();ctx.arc(x,y,r*2.5,0,Math.PI*2);
+      ctx.fillStyle=grd;ctx.fill();
+    }
+
+    // outer ring
+    ctx.beginPath();ctx.arc(x,y,r+2,0,Math.PI*2);
+    ctx.fillStyle= isHov ? col+'44' : col+'18';
+    ctx.fill();
+
+    // main dot
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle= isHov ? col : col+'cc';
+    ctx.fill();
+
+    // enjoyment score inside large dots
+    if(r>16){
+      ctx.fillStyle= isHov ? '#fff' : 'rgba(255,255,255,0.7)';
+      ctx.font=`bold ${Math.min(r*0.6,13)}px Inter,sans-serif`;
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(d.enj.toFixed(1), x, y);
+    }
+
+    // label
+    const label = d.name.split('\n');
+    const lx = x, ly = y - r - 6;
+    ctx.font=`${isHov?'bold ':''} 9px Inter,sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='bottom';
+    ctx.fillStyle = isHov ? col : (r>14 ? col+'cc' : '#444');
+    label.forEach((line,li)=>{
+      ctx.fillText(line, lx, ly - (label.length-1-li)*11);
+    });
+  });
+
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+}
+
+function drawScatterBg(pad,pw,ph,w,h){
+  // quadrant shading
+  ctx.fillStyle='rgba(232,93,74,0.04)';
+  ctx.fillRect(pad.l, pad.t+ph/2, pw/2, ph/2);
+  ctx.fillStyle='rgba(74,144,217,0.04)';
+  ctx.fillRect(pad.l+pw/2, pad.t, pw/2, ph/2);
+
+  // grid lines
+  [0,25,50,75,100].forEach(v=>{
+    const x=pad.l+(v/100)*pw;
+    ctx.strokeStyle='#161616';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+ph);ctx.stroke();
+    ctx.fillStyle='#2a2a2a';ctx.font='9px Inter,sans-serif';ctx.textAlign='center';
+    ctx.fillText(v+'%',x,pad.t+ph+16);
+  });
+  [4,4.5,5,5.5,6,6.5,7].forEach(v=>{
+    const y=pad.t+((7-v)/3)*ph;
+    ctx.strokeStyle='#161616';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+pw,y);ctx.stroke();
+    ctx.fillStyle='#2a2a2a';ctx.font='9px Inter,sans-serif';ctx.textAlign='right';
+    ctx.fillText(v.toFixed(1),pad.l-6,y+3);
+  });
+
+  // mid lines
+  ctx.strokeStyle='#222';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(pad.l+pw/2,pad.t);ctx.lineTo(pad.l+pw/2,pad.t+ph);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(pad.l,pad.t+ph/2);ctx.lineTo(pad.l+pw,pad.t+ph/2);ctx.stroke();
+  ctx.setLineDash([]);
+
+  // axis labels
+  ctx.fillStyle='#333';ctx.font='bold 10px Inter,sans-serif';ctx.textAlign='center';
+  ctx.fillText('Effort to start →', pad.l+pw/2, pad.t+ph+36);
+  ctx.save();ctx.translate(16,pad.t+ph/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText('Enjoyment score (UK Time Use Survey, 1–7) →',0,0);
+  ctx.restore();
+}
+
+function drawRankedBg(pad,pw,ph,w,h){
+  ctx.fillStyle='#333';ctx.font='bold 11px Inter,sans-serif';ctx.textAlign='center';
+  ctx.fillText('Ranked by Enjoyment–Time Gap  (bigger circle = higher enjoyment score)',pad.l+pw/2,pad.t-10);
+  ctx.fillStyle='#1e1e1e';ctx.fillRect(pad.l,pad.t,pw,ph);
+  ctx.strokeStyle='#222';ctx.lineWidth=1;
+  ctx.strokeRect(pad.l,pad.t,pw,ph);
+
+  ctx.fillStyle='#2a2a2a';ctx.font='10px Inter,sans-serif';ctx.textAlign='center';
+  ctx.fillText('← Most enjoyed but least done',pad.l+pw*0.2, pad.t+ph+16);
+  ctx.fillText('Least enjoyed but most done →',pad.l+pw*0.8, pad.t+ph+16);
+}
+
+function drawTimeBg(pad,pw,ph,w,h){
+  // gradient bg
+  const grd=ctx.createLinearGradient(pad.l,pad.t+ph,pad.l,pad.t);
+  grd.addColorStop(0,'rgba(232,93,74,0.06)');
+  grd.addColorStop(1,'rgba(74,144,217,0.06)');
+  ctx.fillStyle=grd;ctx.fillRect(pad.l,pad.t,pw,ph);
+
+  // y grid
+  [0,1,2,3].forEach(v=>{
+    const y=pad.t+ph-(v/3)*ph;
+    ctx.strokeStyle='#1a1a1a';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+pw,y);ctx.stroke();
+    ctx.fillStyle='#333';ctx.font='9px Inter,sans-serif';ctx.textAlign='right';
+    ctx.fillText(v+'h/day',pad.l-6,y+3);
+  });
+
+  ctx.fillStyle='#333';ctx.font='bold 10px Inter,sans-serif';ctx.textAlign='center';
+  ctx.fillText('Activities sorted by daily time spent (left = more time) · Circle size = enjoyment score',pad.l+pw/2,pad.t+ph+36);
+  ctx.fillText('↑ more daily time', pad.l-40, pad.t+ph*0.3);
+}
+
+// interactions
+function getHovered(mx,my){
+  for(let i=0;i<DATA.length;i++){
+    const {x,y,r}=animCurrent[i];
+    if(Math.hypot(mx-x,my-y)<r+4) return i;
+  }
+  return -1;
+}
+
+cv.addEventListener('mousemove',e=>{
+  const rect=cv.getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  const idx=getHovered(mx,my);
+  if(idx!==hovIdx){hovIdx=idx;render();}
+  if(idx>=0){
+    const d=DATA[idx];
+    document.getElementById('t-name').textContent=d.name.replace('\n',' ');
+    document.getElementById('t-enj').textContent=d.enj+' / 7.0';
+    document.getElementById('t-eff').textContent=d.eff+'%';
+    document.getElementById('t-time').textContent=d.time>0?d.time+'h / day':'< 0.1h';
+    document.getElementById('t-src').textContent='Source: '+d.note;
+    document.getElementById('t-src').style.color=CATS[d.cat].color+'99';
+    tip.style.opacity='1';
+    tip.style.left=(e.clientX+16)+'px';
+    tip.style.top=(e.clientY-40)+'px';
+  } else {
+    tip.style.opacity='0';
+  }
+});
+cv.addEventListener('mouseleave',()=>{hovIdx=-1;tip.style.opacity='0';render();});
+
+// view toggle
+document.querySelectorAll('.t-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.t-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    view=btn.dataset.view;
+    computePositions();
+    animateTo();
+  });
+});
+
+// intro
+document.getElementById('intro').addEventListener('click',()=>{
+  document.getElementById('intro').style.opacity='0';
+  setTimeout(()=>{
+    document.getElementById('intro').style.display='none';
+    document.getElementById('app').classList.add('visible');
+  },800);
+});
+
+window.addEventListener('resize',resize);
+resize();
+</script>
+</body>
+</html>
