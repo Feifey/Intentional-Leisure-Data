@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Map — The Drift from Intention to Default</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f4f6f8; font-family: 'Georgia', 'Times New Roman', serif; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.06); }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    const phases = [
+      {
+        id: "opening",
+        label: "Free time opens",
+        emotion: "Relief · Possibility",
+        inner: '"Finally, some time for myself."',
+        context: "Work ends. Kids are asleep. A gap appears.",
+        color: "#6EC6CA",
+        textColor: "#1a4a4c",
+        bgColor: "#e8f6f7",
+        arcY: 0.12,
+      },
+      {
+        id: "intention",
+        label: "Intention surfaces",
+        emotion: "Hope · Motivation",
+        inner: '"I could read, go for a walk, call a friend…"',
+        context: "A brief window where meaningful leisure feels possible.",
+        color: "#5AAFB4",
+        textColor: "#1a4a4c",
+        bgColor: "#dff1f2",
+        arcY: 0.20,
+      },
+      {
+        id: "friction",
+        label: "Friction appears",
+        emotion: "Hesitation · Uncertainty",
+        inner: '"But I\u2019m tired. Where did I put that book? It\u2019s already 9pm\u2026"',
+        context: "Fatigue, decision effort, low energy, time scarcity — the gap between intention and conditions opens.",
+        pulls: ["Exhaustion from work", "No clear plan", "Limited time left", "Decision fatigue"],
+        color: "#D4A853",
+        textColor: "#4a3a10",
+        bgColor: "#faf3e0",
+        arcY: 0.42,
+      },
+      {
+        id: "pull",
+        label: "The phone is already there",
+        emotion: "Surrender · Autopilot",
+        inner: '"I\u2019ll just check one thing\u2026"',
+        context: "The lowest-friction option wins. The device is present, warm, effortless. No activation energy required.",
+        pulls: ["Always-on apps", "No stopping points", "Algorithmic pull", "Smartphone dependence"],
+        color: "#C97B3A",
+        textColor: "#3d2510",
+        bgColor: "#f7ebe0",
+        arcY: 0.60,
+      },
+      {
+        id: "default",
+        label: "Passive leisure takes over",
+        emotion: "Numbness · Detachment",
+        inner: '"It\u2019s been two hours."',
+        context: "Scrolling, streaming, watching — not chosen, but defaulted into. Systems held the door open.",
+        color: "#A0522D",
+        textColor: "#3d1e0e",
+        bgColor: "#f0e0d4",
+        arcY: 0.76,
+      },
+      {
+        id: "aftermath",
+        label: "The aftermath",
+        emotion: "Guilt · Emptiness · Frustration",
+        inner: '"I wasted it again."',
+        context: "The gap between intention and outcome becomes felt. But the framing of personal failure obscures the systems that produced it.",
+        color: "#7A3B2E",
+        textColor: "#3d1510",
+        bgColor: "#e8d4cc",
+        arcY: 0.88,
+      },
+    ];
+
+    const systemForces = [
+      { label: "Labour schedules", icon: "⏱", desc: "Shift patterns and long hours shrink the time available for rest." },
+      { label: "App ecosystems", icon: "📱", desc: "Platforms are engineered to capture attention before alternatives can form." },
+      { label: "Weak leisure infrastructure", icon: "🏚", desc: "Public spaces, libraries, and community facilities have eroded." },
+      { label: "Cultural overwork norms", icon: "⚙️", desc: "Productivity is valorised; rest is treated as a reward, not a right." },
+      { label: "Income & access limits", icon: "💰", desc: "Many enriching activities carry a cost that constrains choice." },
+      { label: "Fragmented caregiving time", icon: "👶", desc: "Caregiving responsibilities leave only broken slivers of free time." },
+    ];
+
+    /* ─── Journey Arc SVG ─── */
+    function JourneyArc({ active, onSelect, width, height }) {
+      const pad = { left: 80, right: 80, top: 30, bottom: 30 };
+      const innerW = width - pad.left - pad.right;
+      const innerH = height - pad.top - pad.bottom;
+      const n = phases.length;
+
+      const pts = phases.map((p, i) => ({
+        x: pad.left + (i / (n - 1)) * innerW,
+        y: pad.top + p.arcY * innerH,
+      }));
+
+      // smooth catmull-rom path
+      function catmullRomPath(points) {
+        if (points.length < 2) return "";
+        let d = `M ${points[0].x} ${points[0].y}`;
+        for (let i = 0; i < points.length - 1; i++) {
+          const p0 = points[Math.max(i - 1, 0)];
+          const p1 = points[i];
+          const p2 = points[i + 1];
+          const p3 = points[Math.min(i + 2, points.length - 1)];
+          const cp1x = p1.x + (p2.x - p0.x) / 6;
+          const cp1y = p1.y + (p2.y - p0.y) / 6;
+          const cp2x = p2.x - (p3.x - p1.x) / 6;
+          const cp2y = p2.y - (p3.y - p1.y) / 6;
+          d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+        }
+        return d;
+      }
+
+      const pathD = catmullRomPath(pts);
+
+      return (
+        <svg width={width} height={height} style={{ display: "block" }}>
+          <defs>
+            <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              {phases.map((p, i) => (
+                <stop key={p.id} offset={`${(i / (phases.length - 1)) * 100}%`} stopColor={p.color} />
+              ))}
+            </linearGradient>
+          </defs>
+
+          {/* Subtle grid lines */}
+          {[0.25, 0.5, 0.75].map(t => (
+            <line
+              key={t}
+              x1={pad.left + t * innerW} y1={pad.top}
+              x2={pad.left + t * innerW} y2={pad.top + innerH}
+              stroke="#e0e4e8" strokeWidth="1" strokeDasharray="4,4"
+            />
+          ))}
+
+          {/* Y axis labels */}
+          <text x={pad.left - 10} y={pad.top + 4} textAnchor="end" fontSize="10" fill="#aaa" fontFamily="system-ui">high</text>
+          <text x={pad.left - 10} y={pad.top + innerH} textAnchor="end" fontSize="10" fill="#aaa" fontFamily="system-ui">low</text>
+
+          {/* Arc path */}
+          <path d={pathD} fill="none" stroke="url(#arcGrad)" strokeWidth="3" opacity="0.35" strokeLinejoin="round" />
+          <path d={pathD} fill="none" stroke="url(#arcGrad)" strokeWidth="1.5" opacity="0.8" strokeLinejoin="round" />
+
+          {/* Nodes */}
+          {phases.map((phase, i) => {
+            const { x, y } = pts[i];
+            const isActive = active === phase.id;
+            const r = isActive ? 22 : 16;
+            return (
+              <g key={phase.id} onClick={() => onSelect(isActive ? null : phase.id)} style={{ cursor: "pointer" }}>
+                {/* glow ring when active */}
+                {isActive && (
+                  <circle cx={x} cy={y} r={32} fill={phase.color} opacity="0.12" />
+                )}
+                <circle
+                  cx={x} cy={y} r={r}
+                  fill={isActive ? phase.color : "#fff"}
+                  stroke={phase.color}
+                  strokeWidth={isActive ? 0 : 2.5}
+                  style={{ transition: "all 0.25s ease" }}
+                />
+                <text
+                  x={x} y={y + 5}
+                  textAnchor="middle"
+                  fontSize={isActive ? "13" : "11"}
+                  fontWeight="700"
+                  fill={isActive ? "#fff" : phase.color}
+                  fontFamily="system-ui, sans-serif"
+                  style={{ pointerEvents: "none", userSelect: "none" }}
+                >
+                  {i + 1}
+                </text>
+                {/* label below node */}
+                <text
+                  x={x}
+                  y={y + r + 16}
+                  textAnchor="middle"
+                  fontSize="11"
+                  fill={isActive ? phase.color : "#888"}
+                  fontWeight={isActive ? "600" : "400"}
+                  fontFamily="system-ui, sans-serif"
+                  style={{ pointerEvents: "none", userSelect: "none" }}
+                >
+                  {phase.label.length > 18 ? phase.label.slice(0, 17) + "…" : phase.label}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      );
+    }
+
+    /* ─── Detail Panel ─── */
+    function DetailPanel({ phase }) {
+      if (!phase) {
+        return (
+          <div style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#bbb",
+            fontFamily: "system-ui, sans-serif",
+            padding: 48,
+            gap: 12,
+          }}>
+            <div style={{ fontSize: 40 }}>↑</div>
+            <div style={{ fontSize: 14 }}>Select a phase on the journey to explore it</div>
+          </div>
+        );
+      }
+
+      return (
+        <div key={phase.id} style={{
+          flex: 1,
+          padding: "36px 48px",
+          animation: "fadeIn 0.3s ease",
+          overflowY: "auto",
+        }}>
+          {/* Phase header */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 20, marginBottom: 28 }}>
+            <div style={{
+              width: 52,
+              height: 52,
+              borderRadius: "50%",
+              background: phase.color,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              fontSize: 20,
+              fontWeight: 700,
+              flexShrink: 0,
+              fontFamily: "system-ui, sans-serif",
+              boxShadow: `0 4px 16px ${phase.color}44`,
+            }}>
+              {phases.findIndex(p => p.id === phase.id) + 1}
+            </div>
+            <div>
+              <h2 style={{ fontSize: 24, fontWeight: 400, color: "#1a1a1a", lineHeight: 1.3, marginBottom: 4 }}>
+                {phase.label}
+              </h2>
+              <div style={{
+                display: "inline-block",
+                fontSize: 12,
+                color: phase.textColor,
+                background: `${phase.color}20`,
+                border: `1px solid ${phase.color}40`,
+                borderRadius: 20,
+                padding: "3px 12px",
+                fontFamily: "system-ui, sans-serif",
+                letterSpacing: 0.4,
+              }}>
+                {phase.emotion}
+              </div>
+            </div>
+          </div>
+
+          {/* Inner quote */}
+          <div style={{
+            fontSize: 17,
+            fontStyle: "italic",
+            color: phase.textColor,
+            padding: "16px 20px",
+            background: `${phase.color}12`,
+            borderLeft: `4px solid ${phase.color}`,
+            borderRadius: "0 10px 10px 0",
+            marginBottom: 20,
+            lineHeight: 1.6,
+          }}>
+            {phase.inner}
+          </div>
+
+          {/* Context */}
+          <p style={{
+            fontSize: 15,
+            color: "#4a4a4a",
+            lineHeight: 1.75,
+            marginBottom: 24,
+            maxWidth: 580,
+          }}>
+            {phase.context}
+          </p>
+
+          {/* Pulls */}
+          {phase.pulls && (
+            <div>
+              <div style={{ fontSize: 11, fontFamily: "system-ui, sans-serif", letterSpacing: 1.5, textTransform: "uppercase", color: "#aaa", marginBottom: 10 }}>
+                Forces at work
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {phase.pulls.map(p => (
+                  <span key={p} style={{
+                    fontSize: 13,
+                    padding: "6px 14px",
+                    borderRadius: 20,
+                    background: `${phase.color}14`,
+                    color: phase.textColor,
+                    border: `1px solid ${phase.color}35`,
+                    fontFamily: "system-ui, sans-serif",
+                  }}>
+                    ↓ {p}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    /* ─── Main App ─── */
+    function DriftMap() {
+      const [active, setActive] = useState(null);
+      const [showSystems, setShowSystems] = useState(false);
+      const [arcWidth, setArcWidth] = useState(900);
+      const arcRef = useRef(null);
+
+      useEffect(() => {
+        const obs = new ResizeObserver(entries => {
+          if (entries[0]) setArcWidth(entries[0].contentRect.width);
+        });
+        if (arcRef.current) obs.observe(arcRef.current);
+        return () => obs.disconnect();
+      }, []);
+
+      const activePhase = phases.find(p => p.id === active) || null;
+
+      return (
+        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f4f6f8" }}>
+
+          {/* ── Top nav bar ── */}
+          <header style={{
+            background: "#fff",
+            borderBottom: "1px solid #e8eaed",
+            padding: "0 40px",
+            height: 60,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "#aaa", fontFamily: "system-ui, sans-serif" }}>
+                User Map
+              </div>
+              <div style={{ width: 1, height: 20, background: "#e0e0e0" }} />
+              <div style={{ fontSize: 15, fontWeight: 400, color: "#2c2c2c" }}>
+                The Drift from Intention to Default
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 12, color: "#999", fontStyle: "italic", fontFamily: "system-ui, sans-serif" }}>
+                How passive leisure becomes the outcome — not the choice
+              </span>
+              <button
+                onClick={() => setShowSystems(!showSystems)}
+                style={{
+                  background: showSystems ? "#5AAFB4" : "transparent",
+                  color: showSystems ? "#fff" : "#5AAFB4",
+                  border: "1.5px solid #5AAFB4",
+                  borderRadius: 6,
+                  padding: "6px 16px",
+                  fontSize: 12,
+                  cursor: "pointer",
+                  letterSpacing: 0.4,
+                  transition: "all 0.25s ease",
+                  fontFamily: "system-ui, sans-serif",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {showSystems ? "Hide" : "Show"} systemic forces
+              </button>
+            </div>
+          </header>
+
+          {/* ── Journey arc ── */}
+          <div ref={arcRef} style={{
+            background: "#fff",
+            borderBottom: "1px solid #e8eaed",
+            flexShrink: 0,
+          }}>
+            <JourneyArc
+              active={active}
+              onSelect={setActive}
+              width={arcWidth}
+              height={200}
+            />
+          </div>
+
+          {/* ── Main content ── */}
+          <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+
+            {/* Phase list sidebar */}
+            <aside style={{
+              width: 260,
+              borderRight: "1px solid #e8eaed",
+              background: "#fff",
+              overflowY: "auto",
+              flexShrink: 0,
+            }}>
+              {phases.map((phase, i) => {
+                const isActive = active === phase.id;
+                return (
+                  <div
+                    key={phase.id}
+                    onClick={() => setActive(isActive ? null : phase.id)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 14,
+                      padding: "14px 20px",
+                      cursor: "pointer",
+                      background: isActive ? `${phase.color}10` : "transparent",
+                      borderLeft: isActive ? `3px solid ${phase.color}` : "3px solid transparent",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    <div style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      background: isActive ? phase.color : `${phase.color}20`,
+                      border: `2px solid ${phase.color}`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: isActive ? "#fff" : phase.color,
+                      flexShrink: 0,
+                      fontFamily: "system-ui, sans-serif",
+                      transition: "all 0.2s ease",
+                    }}>
+                      {i + 1}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: isActive ? 600 : 400, color: isActive ? "#1a1a1a" : "#444", lineHeight: 1.3 }}>
+                        {phase.label}
+                      </div>
+                      <div style={{ fontSize: 11, color: "#aaa", marginTop: 2, fontFamily: "system-ui, sans-serif" }}>
+                        {phase.emotion}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </aside>
+
+            {/* Detail panel */}
+            <main style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+              <DetailPanel phase={activePhase} />
+            </main>
+          </div>
+
+          {/* ── Systemic forces drawer ── */}
+          {showSystems && (
+            <div style={{
+              background: "#fff",
+              borderTop: "1px solid #e8eaed",
+              padding: "24px 40px",
+              animation: "fadeIn 0.3s ease",
+              flexShrink: 0,
+            }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 16, marginBottom: 16 }}>
+                <div style={{ fontSize: 11, fontFamily: "system-ui, sans-serif", letterSpacing: 2, textTransform: "uppercase", color: "#5AAFB4", fontWeight: 600 }}>
+                  Systemic forces shaping the drift
+                </div>
+                <div style={{ fontSize: 13, color: "#888", fontStyle: "italic" }}>
+                  The drift is not a personal failure — these are the conditions that make passive leisure the path of least resistance.
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }}>
+                {systemForces.map(f => (
+                  <div key={f.label} style={{
+                    padding: "14px 16px",
+                    borderRadius: 8,
+                    background: "#f0f8f9",
+                    border: "1px solid #d4ecee",
+                  }}>
+                    <div style={{ fontSize: 22, marginBottom: 8 }}>{f.icon}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: "#1a4a4c", fontFamily: "system-ui, sans-serif", marginBottom: 4 }}>
+                      {f.label}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "#6a8a8c", fontFamily: "system-ui, sans-serif", lineHeight: 1.5 }}>
+                      {f.desc}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Footer quote ── */}
+          <footer style={{
+            background: "#fff",
+            borderTop: "1px solid #e8eaed",
+            padding: "14px 40px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+          }}>
+            <p style={{ fontSize: 13, color: "#888", fontStyle: "italic", maxWidth: 600 }}>
+              "Passive leisure wins when it is the easiest option to enter. The real question is: what would make intentional leisure easier?"
+            </p>
+            <span style={{ fontSize: 11, color: "#ccc", fontFamily: "system-ui, sans-serif" }}>
+              Click any node or phase to explore
+            </span>
+          </footer>
+
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<DriftMap />);
+  </script>
+</body>
+</html>

@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Constraint Map — The Cost of Escaping Passive Leisure</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: #0c1021;
+    font-family: Georgia, 'Times New Roman', serif;
+    color: #e0ddd5;
+    overflow-x: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .header .label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #6a7a9a;
+    margin-bottom: 6px;
+    font-family: system-ui, sans-serif;
+  }
+
+  .header h1 {
+    font-size: 24px;
+    font-weight: 400;
+    color: #d4cfc4;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .header .subtitle {
+    font-size: 13px;
+    color: #7a8a9a;
+    font-style: italic;
+    line-height: 1.5;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .instruction {
+    text-align: center;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: #6ac8c8;
+    font-family: system-ui, sans-serif;
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+
+  .main-layout {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .left-col {
+    flex: 0 0 auto;
+    width: min(60%, 560px);
+  }
+
+  .right-col {
+    flex: 1;
+    min-width: 0;
+    padding-top: 4px;
+  }
+
+  .well-canvas-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  canvas {
+    width: 100%;
+    display: block;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  canvas:active { cursor: grabbing; }
+
+  .zone-bar {
+    padding: 14px 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+    min-height: 80px;
+    transition: all 0.3s ease;
+  }
+
+  .zone-bar .zone-name {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+
+  .zone-bar .zone-desc {
+    font-size: 10.5px;
+    color: #8a8a8a;
+    line-height: 1.55;
+    margin-bottom: 8px;
+  }
+
+  .zone-bar .cost-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 9px;
+    font-family: system-ui, sans-serif;
+  }
+
+  .cost-meter {
+    flex: 1;
+    max-width: 180px;
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .cost-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease, background 0.3s ease;
+  }
+
+  .cost-row .cost-label { min-width: 80px; }
+
+  /* Legend */
+  .legend {
+    margin: 10px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 9px;
+    font-family: system-ui, sans-serif;
+    color: #7a8a9a;
+    padding: 4px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .legend-item:hover {
+    background: rgba(255,255,255,0.05);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 600px) {
+    .main-layout {
+      flex-direction: column;
+    }
+    .left-col {
+      width: 100%;
+    }
+  }
+
+  /* Escape */
+  .escape-msg {
+    display: none;
+    text-align: left;
+    margin-top: 12px;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(106,200,180,0.3);
+    background: rgba(106,200,180,0.06);
+    animation: fadeIn 0.5s ease;
+  }
+
+  .escape-msg.visible { display: block; }
+
+  .escape-msg .esc-title {
+    font-size: 18px;
+    color: #6ac8b4;
+    margin-bottom: 8px;
+  }
+
+  .escape-msg .esc-body {
+    font-size: 13.5px;
+    color: #8aaa8a;
+    line-height: 1.6;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .reset-btn {
+    display: none;
+    margin: 10px 0 0;
+    background: transparent;
+    color: #6a7a9a;
+    border: 1px solid #6a7a9a;
+    border-radius: 16px;
+    padding: 5px 16px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: system-ui, sans-serif;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+    text-align: center;
+  }
+
+  .reset-btn.visible { display: block; }
+  .reset-btn:hover { color: #aaa; border-color: #aaa; }
+
+  .footer {
+    margin-top: 28px;
+    text-align: center;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .footer .quote {
+    font-size: 14px;
+    color: #5a6a6a;
+    font-style: italic;
+    line-height: 1.6;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="label">Constraint Map</div>
+    <h1>The Cost of Escaping Passive Leisure</h1>
+    <div class="subtitle">Each ring is a constraint. The core costs nothing. Every ring outward costs more to break through. That is why people stay near the centre.</div>
+  </div>
+
+  <div class="instruction" id="instruction">Drag yourself outward to escape the constraints</div>
+
+  <div class="main-layout">
+    <div class="left-col">
+      <div class="well-canvas-wrap">
+        <canvas id="wellCanvas"></canvas>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="zone-bar" id="zoneBar">
+        <div class="zone-name" id="zoneName"></div>
+        <div class="zone-desc" id="zoneDesc"></div>
+        <div class="cost-row">
+          <span class="cost-label" id="costLabel"></span>
+          <div class="cost-meter"><div class="cost-fill" id="costFill"></div></div>
+          <span id="costText"></span>
+        </div>
+      </div>
+
+      <div class="legend" id="legend"></div>
+
+      <div class="escape-msg" id="escapeMsg">
+        <div class="esc-title">You broke through every constraint.</div>
+        <div class="esc-body">It cost energy, time, money, access, social effort, attention, habit-breaking, and fighting cultural pressure. Most people cannot pay all of these at once. That is not a personal failure \u2014 it is a design problem. Intentional leisure becomes possible when these costs are reduced by systems, not willpower.</div>
+      </div>
+
+      <button class="reset-btn" id="resetBtn" onclick="resetWell()">Reset \u2014 fall back to the centre</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p class="quote">"The real issue is not only what people want to do, but whether their conditions support it."</p>
+  </div>
+</div>
+
+<script>
+var constraints = [
+  {
+    id: "notifications",
+    label: "Notifications",
+    desc: "The cheapest pull. A buzz, a badge, a red dot. Costs almost nothing to check \u2014 which is exactly why it wins. Always-on app environments keep passive leisure one tap away.",
+    color: [180, 80, 80],
+    costLabel: "Cost to overcome:",
+    costPct: 8,
+    costText: "Nearly free",
+    resistance: 0.7
+  },
+  {
+    id: "habits",
+    label: "Learned Habits",
+    desc: "Reaching for the phone is automatic. Opening the same apps is muscle memory. These patterns were built over years of repetition and reinforced by design. Breaking them takes conscious effort every single time.",
+    color: [196, 90, 74],
+    costLabel: "Cost to overcome:",
+    costPct: 20,
+    costText: "Repeated effort",
+    resistance: 0.82
+  },
+  {
+    id: "energy",
+    label: "Energy",
+    desc: "Intentional leisure requires activation energy \u2014 physical, mental, or emotional. After a full day of work or caregiving, that energy is already spent. BLS data shows midlife adults have especially limited leisure time, and what remains comes with depleted capacity.",
+    color: [196, 110, 74],
+    costLabel: "Cost to overcome:",
+    costPct: 35,
+    costText: "Physical + mental",
+    resistance: 0.91
+  },
+  {
+    id: "time",
+    label: "Time Length",
+    desc: "Meaningful leisure often needs a block of uninterrupted time. But work, caregiving, and fragmented schedules break time into small pieces. ABS reports 33% of Australians often or always feel rushed, most commonly because of balancing work and family. Short gaps default to passive options.",
+    color: [196, 140, 74],
+    costLabel: "Cost to overcome:",
+    costPct: 48,
+    costText: "Scarce resource",
+    resistance: 0.95
+  },
+  {
+    id: "money",
+    label: "Money",
+    desc: "Many intentional leisure activities have a price: gym memberships, materials, transport, classes, equipment. Passive leisure is often the cheapest option available. Pew shows lower-income Americans are more likely to be smartphone-dependent, making the phone the primary leisure device by default.",
+    color: [196, 160, 74],
+    costLabel: "Cost to overcome:",
+    costPct: 58,
+    costText: "Financial barrier",
+    resistance: 0.97
+  },
+  {
+    id: "access",
+    label: "Access",
+    desc: "Parks, libraries, studios, community centres, sports facilities \u2014 intentional leisure needs infrastructure. Where leisure infrastructure is weak or distant, passive options fill the vacuum. This varies sharply by region, income, and urban design.",
+    color: [140, 160, 200],
+    costLabel: "Cost to overcome:",
+    costPct: 70,
+    costText: "Infrastructure gap",
+    resistance: 0.985
+  },
+  {
+    id: "social",
+    label: "Social Context",
+    desc: "Leisure is shaped by who is around you. If your household, friends, or community default to passive leisure, stepping away requires social negotiation. If no one invites you, organises with you, or shares the activity, intentional leisure becomes a solo effort against the current.",
+    color: [120, 150, 210],
+    costLabel: "Cost to overcome:",
+    costPct: 83,
+    costText: "Social negotiation",
+    resistance: 0.994
+  },
+  {
+    id: "culture",
+    label: "Cultural Pressure",
+    desc: "The most expensive constraint. In cultures of overwork, rest is stigmatised. In contexts without protected rest traditions, leisure must be individually justified. Where rituals, labour protections, or communal rest exist, intentional leisure is structurally easier. Where they don\u2019t, every choice to rest is made against the grain.",
+    color: [106, 140, 220],
+    costLabel: "Cost to overcome:",
+    costPct: 100,
+    costText: "Systemic",
+    resistance: 0.998
+  }
+];
+
+var canvas = document.getElementById("wellCanvas");
+var ctx = canvas.getContext("2d");
+var dpr = window.devicePixelRatio || 1;
+var W, H, cx, cy, maxR, minR;
+var userX, userY, userDist;
+var dragging = false;
+var escaped = false;
+var ringBoundaries = [];
+var particles = [];
+var shakeAmount = 0;
+var breakEffects = [];
+
+function resize() {
+  var wrap = canvas.parentElement;
+  var w = Math.min(wrap.clientWidth, 640);
+  W = w; H = w;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cx = W / 2; cy = H / 2;
+  maxR = W * 0.49;
+  minR = W * 0.045;
+
+  ringBoundaries = [];
+  for (var i = 0; i <= constraints.length; i++) {
+    ringBoundaries.push(minR + (maxR - minR) * (i / constraints.length));
+  }
+
+  if (!escaped) { userX = cx; userY = cy; userDist = 0; }
+  initParticles();
+}
+
+function initParticles() {
+  particles = [];
+  for (var i = 0; i < 35; i++) {
+    particles.push({
+      angle: Math.random() * Math.PI * 2,
+      dist: minR + Math.random() * (maxR - minR),
+      speed: 0.001 + Math.random() * 0.003,
+      size: 0.5 + Math.random() * 1.2,
+      opacity: 0.08 + Math.random() * 0.15,
+      driftIn: 0.02 + Math.random() * 0.05
+    });
+  }
+}
+
+function getCurrentZone() {
+  for (var i = 0; i < constraints.length; i++) {
+    if (userDist < ringBoundaries[i + 1]) return i;
+  }
+  return constraints.length - 1;
+}
+
+function getResistance() {
+  var zi = getCurrentZone();
+  var c = constraints[zi];
+  if (zi === 0) return c.resistance;
+  var lower = ringBoundaries[zi];
+  var upper = ringBoundaries[zi + 1];
+  var t = Math.min(1, Math.max(0, (userDist - lower) / (upper - lower)));
+  var prevR = constraints[Math.max(0, zi - 1)].resistance;
+  return prevR + (c.resistance - prevR) * t;
+}
+
+function updateZoneUI() {
+  var zi = getCurrentZone();
+  var c = constraints[zi];
+  var rgb = "rgb(" + c.color.join(",") + ")";
+  document.getElementById("zoneName").textContent = c.label;
+  document.getElementById("zoneName").style.color = rgb;
+  document.getElementById("zoneDesc").textContent = c.desc;
+  document.getElementById("costLabel").style.color = rgb;
+  document.getElementById("costLabel").textContent = c.costLabel;
+  document.getElementById("costFill").style.width = c.costPct + "%";
+  document.getElementById("costFill").style.background = rgb;
+  document.getElementById("costText").textContent = c.costText;
+  document.getElementById("costText").style.color = rgb;
+  document.getElementById("zoneBar").style.borderColor = "rgba(" + c.color.join(",") + ",0.25)";
+
+  // Highlight legend
+  var items = document.querySelectorAll(".legend-item");
+  for (var i = 0; i < items.length; i++) {
+    items[i].style.borderColor = i === zi ? "rgba(" + constraints[i].color.join(",") + ",0.6)" : "rgba(255,255,255,0.06)";
+    items[i].style.background = i === zi ? "rgba(" + constraints[i].color.join(",") + ",0.1)" : "rgba(255,255,255,0.02)";
+  }
+}
+
+function buildLegend() {
+  var el = document.getElementById("legend");
+  var html = "";
+  for (var i = 0; i < constraints.length; i++) {
+    var c = constraints[i];
+    html += '<div class="legend-item" onclick="highlightRing(' + i + ')"><div class="legend-dot" style="background:rgb(' + c.color.join(",") + ')"></div>' + c.label + '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function highlightRing(i) {
+  var c = constraints[i];
+  var rgb = "rgb(" + c.color.join(",") + ")";
+  document.getElementById("zoneName").textContent = c.label;
+  document.getElementById("zoneName").style.color = rgb;
+  document.getElementById("zoneDesc").textContent = c.desc;
+  document.getElementById("costLabel").style.color = rgb;
+  document.getElementById("costLabel").textContent = c.costLabel;
+  document.getElementById("costFill").style.width = c.costPct + "%";
+  document.getElementById("costFill").style.background = rgb;
+  document.getElementById("costText").textContent = c.costText;
+  document.getElementById("costText").style.color = rgb;
+  document.getElementById("zoneBar").style.borderColor = "rgba(" + c.color.join(",") + ",0.25)";
+  var items = document.querySelectorAll(".legend-item");
+  for (var j = 0; j < items.length; j++) {
+    items[j].style.borderColor = j === i ? "rgba(" + constraints[j].color.join(",") + ",0.6)" : "rgba(255,255,255,0.06)";
+    items[j].style.background = j === i ? "rgba(" + constraints[j].color.join(",") + ",0.1)" : "rgba(255,255,255,0.02)";
+  }
+}
+
+function spawnBreak(bx, by, color) {
+  for (var i = 0; i < 10; i++) {
+    var angle = Math.random() * Math.PI * 2;
+    var speed = 1 + Math.random() * 3;
+    breakEffects.push({
+      x: bx, y: by,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 1, color: color,
+      size: 1.5 + Math.random() * 2
+    });
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Background glow
+  var bgGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR);
+  bgGrad.addColorStop(0, "rgba(180,80,80,0.06)");
+  bgGrad.addColorStop(0.5, "rgba(140,140,200,0.03)");
+  bgGrad.addColorStop(1, "rgba(12,16,33,0)");
+  ctx.fillStyle = bgGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, maxR, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Spiral field lines
+  for (var s = 0; s < 4; s++) {
+    var startA = s * 90 + performance.now() * 0.002;
+    ctx.beginPath();
+    for (var t = 0; t <= 80; t++) {
+      var p = t / 80;
+      var a = (startA + p * 350) * Math.PI / 180;
+      var r = maxR - p * (maxR - minR * 1.5);
+      var px = cx + Math.cos(a) * r;
+      var py = cy + Math.sin(a) * r;
+      t === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.strokeStyle = "rgba(255,255,255,0.015)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  var zi = getCurrentZone();
+
+  // Draw rings
+  for (var i = constraints.length - 1; i >= 0; i--) {
+    var c = constraints[i];
+    var inner = ringBoundaries[i];
+    var outer = ringBoundaries[i + 1];
+    var mid = (inner + outer) / 2;
+    var rw = outer - inner;
+    var isCurrent = zi === i;
+
+    // Ring fill
+    ctx.beginPath();
+    ctx.arc(cx, cy, mid, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(" + c.color.join(",") + "," + (isCurrent ? 0.28 : 0.08) + ")";
+    ctx.lineWidth = rw - 1;
+    ctx.stroke();
+
+    // Ring border
+    ctx.beginPath();
+    ctx.arc(cx, cy, outer, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(" + c.color.join(",") + "," + (isCurrent ? 0.55 : 0.15) + ")";
+    ctx.lineWidth = isCurrent ? 1.8 : 0.5;
+    ctx.stroke();
+
+    // Barrier glow at boundary
+    if (i > 0) {
+      var bOpacity = 0.06 + c.resistance * 0.2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, outer, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(" + c.color.join(",") + "," + bOpacity + ")";
+      ctx.lineWidth = 3 + c.resistance * 4;
+      ctx.stroke();
+    }
+
+    // Label on ring
+    var labelR = mid;
+    var labelOpacity = isCurrent ? 0.95 : 0.3;
+    ctx.save();
+    ctx.globalAlpha = labelOpacity;
+    ctx.fillStyle = "rgb(" + c.color.join(",") + ")";
+    ctx.font = "bold 9px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(c.label.toUpperCase(), cx, cy - labelR + 5);
+
+    // Cost indicator
+    ctx.globalAlpha = labelOpacity * 0.6;
+    ctx.font = "italic 8px Georgia, serif";
+    ctx.fillStyle = "#aaa";
+    ctx.fillText(c.costText, cx, cy - labelR + 16);
+    ctx.restore();
+  }
+
+  // Core label
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  ctx.fillStyle = "#e0ddd5";
+  ctx.font = "italic 10px Georgia, serif";
+  ctx.textAlign = "center";
+  ctx.fillText("Passive", cx, cy - 6);
+  ctx.fillText("Leisure", cx, cy + 7);
+  ctx.restore();
+
+  // Particles
+  for (var pi = 0; pi < particles.length; pi++) {
+    var pt = particles[pi];
+    pt.angle += pt.speed;
+    if (!dragging) pt.dist -= pt.driftIn;
+    if (pt.dist < minR) pt.dist = minR + Math.random() * (maxR - minR);
+    var ppx = cx + Math.cos(pt.angle) * pt.dist;
+    var ppy = cy + Math.sin(pt.angle) * pt.dist;
+    ctx.beginPath();
+    ctx.arc(ppx, ppy, pt.size, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255,255,255," + pt.opacity + ")";
+    ctx.fill();
+  }
+
+  // Centre pulse
+  var pulseR = minR * 0.55 + Math.sin(performance.now() * 0.002) * minR * 0.15;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pulseR, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(180,80,80,0.15)";
+  ctx.fill();
+
+  // Break effects
+  for (var bi = breakEffects.length - 1; bi >= 0; bi--) {
+    var b = breakEffects[bi];
+    b.x += b.vx; b.y += b.vy; b.life -= 0.025;
+    if (b.life <= 0) { breakEffects.splice(bi, 1); continue; }
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.size * b.life, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(" + b.color + "," + (b.life * 0.7) + ")";
+    ctx.fill();
+  }
+
+  // User dot
+  if (!escaped) {
+    var sx = 0, sy = 0;
+    if (shakeAmount > 0) {
+      sx = (Math.random() - 0.5) * shakeAmount;
+      sy = (Math.random() - 0.5) * shakeAmount;
+      shakeAmount *= 0.92;
+      if (shakeAmount < 0.3) shakeAmount = 0;
+    }
+    var ux = userX + sx, uy = userY + sy;
+
+    // Glow
+    var uGrad = ctx.createRadialGradient(ux, uy, 0, ux, uy, 22);
+    uGrad.addColorStop(0, "rgba(255,255,255,0.3)");
+    uGrad.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = uGrad;
+    ctx.beginPath();
+    ctx.arc(ux, uy, 22, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Dot
+    ctx.beginPath();
+    ctx.arc(ux, uy, 9, 0, Math.PI * 2);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+
+    ctx.fillStyle = "#0c1021";
+    ctx.font = "bold 6.5px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("YOU", ux, uy);
+
+    // Tether
+    if (dragging && userDist > minR * 1.5) {
+      var resist = getResistance();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(ux, uy);
+      ctx.strokeStyle = "rgba(180,80,80," + (resist * 0.5) + ")";
+      ctx.lineWidth = 1 + resist * 4;
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  // Pull-back physics
+  if (!dragging && !escaped && userDist > 0) {
+    var resist = getResistance();
+    var pullStrength = 1.0 + resist * 4.0;
+    var dx = cx - userX, dy = cy - userY;
+    var d = Math.sqrt(dx * dx + dy * dy);
+    if (d > 1) {
+      userX += dx * pullStrength * 0.15;
+      userY += dy * pullStrength * 0.15;
+    }
+    userDist = Math.sqrt((userX - cx) * (userX - cx) + (userY - cy) * (userY - cy));
+    updateZoneUI();
+  }
+
+  animFrame = requestAnimationFrame(draw);
+}
+
+// Input
+function getPos(e) {
+  var rect = canvas.getBoundingClientRect();
+  if (e.touches) return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+function isOnUser(pos) {
+  var dx = pos.x - userX, dy = pos.y - userY;
+  return Math.sqrt(dx * dx + dy * dy) < 28;
+}
+
+var prevZone = 0;
+
+function onStart(e) {
+  if (escaped) return;
+  var pos = getPos(e);
+  if (isOnUser(pos)) {
+    dragging = true;
+    prevZone = getCurrentZone();
+    document.getElementById("instruction").style.opacity = "0";
+    e.preventDefault();
+  }
+}
+
+function onMove(e) {
+  if (!dragging || escaped) return;
+  e.preventDefault();
+  var pos = getPos(e);
+  var dx = pos.x - userX, dy = pos.y - userY;
+  var currDist = Math.sqrt((userX - cx) * (userX - cx) + (userY - cy) * (userY - cy));
+  var newDist = Math.sqrt((pos.x - cx) * (pos.x - cx) + (pos.y - cy) * (pos.y - cy));
+  var movingOut = newDist > currDist;
+
+  var resist = getResistance();
+  var factor = movingOut ? (1 - resist * 0.998) : 1;
+
+  userX += dx * factor;
+  userY += dy * factor;
+  userDist = Math.sqrt((userX - cx) * (userX - cx) + (userY - cy) * (userY - cy));
+
+  var newZone = getCurrentZone();
+  if (newZone > prevZone) {
+    var crossR = ringBoundaries[prevZone + 1];
+    var angle = Math.atan2(userY - cy, userX - cx);
+    spawnBreak(cx + Math.cos(angle) * crossR, cy + Math.sin(angle) * crossR, constraints[prevZone].color.join(","));
+    shakeAmount = 4 + (constraints[prevZone].resistance * 12);
+    prevZone = newZone;
+  }
+
+  if (userDist >= maxR) {
+    escaped = true;
+    dragging = false;
+    document.getElementById("escapeMsg").classList.add("visible");
+    document.getElementById("resetBtn").classList.add("visible");
+    document.getElementById("zoneBar").style.display = "none";
+    spawnBreak(userX, userY, "106,200,200");
+    spawnBreak(userX, userY, "106,200,180");
+  }
+
+  updateZoneUI();
+}
+
+function onEnd() { dragging = false; }
+
+canvas.addEventListener("mousedown", onStart);
+canvas.addEventListener("mousemove", onMove);
+canvas.addEventListener("mouseup", onEnd);
+canvas.addEventListener("mouseleave", onEnd);
+canvas.addEventListener("touchstart", onStart, { passive: false });
+canvas.addEventListener("touchmove", onMove, { passive: false });
+canvas.addEventListener("touchend", onEnd);
+
+function resetWell() {
+  escaped = false;
+  userX = cx; userY = cy; userDist = 0;
+  shakeAmount = 0; breakEffects = [];
+  document.getElementById("escapeMsg").classList.remove("visible");
+  document.getElementById("resetBtn").classList.remove("visible");
+  document.getElementById("zoneBar").style.display = "block";
+  document.getElementById("instruction").style.opacity = "1";
+  updateZoneUI();
+}
+
+window.addEventListener("resize", resize);
+resize();
+buildLegend();
+updateZoneUI();
+draw();
+</script>
+
+</body>
+</html>
