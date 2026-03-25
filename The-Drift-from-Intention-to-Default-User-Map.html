@@ -58,7 +58,7 @@ const STAGE_LABELS = [
 // ── IDENTITIES ──
 const IDENTITIES = {
   default:{
-    id:'default',label:'Average adult',emoji:'🧑',color:'#3D8B6E',  // distinctly darker teal-green
+    id:'default',label:'Average adult',emoji:'🧑',color:'#5E7A90',  // steel blue H≈205°
     description:'Full-time employed, no children, ages 25–44 (US baseline)',
     source:'BLS ATUS 2024',
     arcY:[0.12,0.20,0.42,0.60,0.76,0.88],
@@ -97,7 +97,7 @@ const IDENTITIES = {
     }
   },
   student:{
-    id:'student',label:'University student',emoji:'🎓',color:'#5B4FCF',  // indigo-violet
+    id:'student',label:'University student',emoji:'🎓',color:'#8A5898',  // dusty violet H≈290°
     description:'18–24, balancing study, social life, and guilt about free time',
     source:'BLS ATUS 2024 (20–24) · r/college · r/university',
     arcY:[0.14,0.22,0.48,0.62,0.74,0.88],
@@ -135,7 +135,7 @@ const IDENTITIES = {
     }
   },
   parent:{
-    id:'parent',label:'Parent of young children',emoji:'👶',color:'#E06B8B',
+    id:'parent',label:'Parent of young children',emoji:'👶',color:'#B87878',  // dusty rose — warm, earthy care
     description:'Caregiver with children under 10. Free time arrives in fragments after bedtime.',
     source:'BLS ATUS 2024 · ABS 2024 · r/Parenting',
     arcY:[0.10,0.16,0.60,0.74,0.85,0.92],
@@ -213,7 +213,7 @@ const IDENTITIES = {
     }
   },
   lowwage:{
-    id:'lowwage',label:'Low-income / precarious worker',emoji:'💰',color:'#7B68C8',
+    id:'lowwage',label:'Low-income / precarious worker',emoji:'💰',color:'#8A9E55',  // olive H≈80°
     description:'Working multiple jobs or low-wage employment. Leisure constrained by both time and cost.',
     source:'BLS ATUS 2024 · r/povertyfinance · Pew Research 2024',
     arcY:[0.10,0.18,0.55,0.68,0.80,0.90],
@@ -251,7 +251,7 @@ const IDENTITIES = {
     }
   },
   diaspora:{
-    id:'diaspora',label:'South Asian diaspora',emoji:'🌏',color:VS.clay,
+    id:'diaspora',label:'South Asian diaspora',emoji:'🌏',color:'#488A8A',  // teal H≈180°
     description:'Second-generation immigrant navigating cultural pressure around productivity and rest.',
     source:'r/ABCDesis · Pew Research Religion 2019',
     arcY:[0.12,0.18,0.55,0.65,0.78,0.92],
@@ -289,7 +289,7 @@ const IDENTITIES = {
     }
   },
   sabbath:{
-    id:'sabbath',label:'Shabbat / Jumu\'ah observer',emoji:'✦',color:'#B08A2E',  // warm gold
+    id:'sabbath',label:'Shabbat / Jumu\'ah observer',emoji:'✦',color:'#A89060',  // warm ochre — ritual warmth
     description:'Weekly structured rest — Shabbat (Jewish), Jumu\'ah (Muslim), or Sunday observance. Rest is institutionally protected.',
     source:'Pew Research Religion & Wellbeing 2019 · My Jewish Learning · Psychology Today 2013 · r/Judaism',
     arcY:[0.15,0.22,0.25,0.22,0.18,0.14],
@@ -331,7 +331,7 @@ const IDENTITIES = {
 // ── EXPANDED IDENTITIES (matching Data1 groupings) ──
 Object.assign(IDENTITIES, {
   retired:{
-    id:'retired',label:'Retired 65+',emoji:'🕊',color:'#7B4FA6',
+    id:'retired',label:'Retired 65+',emoji:'🕊',color:'#5A5898',  // dusty indigo H≈245°
     description:'Post-career. Most free time of any group, but structure is gone.',
     source:'BLS ATUS 2024 (6.22–7.28h/day leisure)',
     arcY:[0.10,0.15,0.38,0.55,0.70,0.80],
@@ -365,7 +365,7 @@ Object.assign(IDENTITIES, {
     }
   },
   japan:{
-    id:'japan',label:'Overworked / East Asian',emoji:'⏱',color:'#C97B55',
+    id:'japan',label:'Overworked / East Asian',emoji:'⏱',color:'#8A5878',  // dusty plum H≈320°
     description:'High-pressure work culture (Japan, S. Korea, finance/tech). Leisure compressed and guilt-laden.',
     source:'Japan Statistics Bureau 2021 · r/japanlife · Wikipedia Karoshi · OECD',
     arcY:[0.08,0.14,0.70,0.80,0.88,0.95],
@@ -399,7 +399,7 @@ Object.assign(IDENTITIES, {
     }
   },
   lowwage:{
-    id:'lowwage',label:'Low-income / precarious',emoji:'💰',color:'#7B68C8',
+    id:'lowwage',label:'Low-income / precarious',emoji:'💰',color:'#8A9E55',  // olive H≈80°
     description:'Multiple jobs or low-wage employment. Leisure constrained by time and cost.',
     source:'BLS ATUS 2024 · r/povertyfinance · Pew Research 2024',
     arcY:[0.10,0.18,0.55,0.68,0.80,0.90],
@@ -432,7 +432,7 @@ Object.assign(IDENTITIES, {
     }
   },
   diaspora:{
-    id:'diaspora',label:'South Asian diaspora',emoji:'🌏',color:'#A85C3A',
+    id:'diaspora',label:'South Asian diaspora',emoji:'🌏',color:'#488A8A',  // teal H≈180°
     description:'Second-generation immigrant navigating cultural pressure around productivity and rest.',
     source:'r/ABCDesis · Pew Research Religion 2019',
     arcY:[0.12,0.18,0.55,0.65,0.78,0.92],
@@ -465,7 +465,7 @@ Object.assign(IDENTITIES, {
     }
   },
   nigeria:{
-    id:'nigeria',label:'Community-first leisure (Nigeria)',emoji:'🤝',color:'#4E8B5F',
+    id:'nigeria',label:'Community-first leisure (Nigeria)',emoji:'🤝',color:'#509A68',  // forest sage H≈145°
     description:'Mobile-first economy where social and community leisure is the default, not the exception.',
     source:'GSMA Mobile Economy 2024 · DataReportal 2024',
     arcY:[0.15,0.20,0.22,0.20,0.17,0.14],
