@@ -1,18 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>User Map — The Drift from Intention to Default</title>
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #f4f6f8; font-family: 'Georgia','Times New Roman',serif; }
-@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-@keyframes slideDown { from { opacity:0; max-height:0; } to { opacity:1; max-height:400px; } }
-.quote-drawer { overflow:hidden; animation: slideDown .3s ease; }
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ── VISUAL SYSTEM ── */
+:root{
+  --cream:#F6EFE4;--sand:#E2D0B8;--terracotta:#C97B55;--clay:#A85C3A;
+  --sage:#7BA899;--moss:#4E7B6F;--slate:#3D5A6C;--ink:#1E2D3A;
+  --mist:#D8E6E2;--blush:#F0D9CC;
+  --font-serif:'Lora','Georgia',serif;
+  --font-sans:'Inter','Helvetica Neue',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);font-family:var(--font-sans);color:var(--ink)}
+
+/* dot grid texture */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(circle,rgba(123,168,153,0.10) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideDown{from{opacity:0;max-height:0}to{opacity:1;max-height:600px}}
+.quote-drawer{overflow:hidden;animation:slideDown .3s ease}
 </style>
 </head>
 <body>
@@ -20,609 +38,520 @@ body { background: #f4f6f8; font-family: 'Georgia','Times New Roman',serif; }
 <script type="text/babel">
 const { useState, useRef, useEffect } = React;
 
-// ══════════════════════════════════════════════════════════
-// STAGE LABELS — consistent taxonomy throughout
-// ══════════════════════════════════════════════════════════
+// ── VISUAL SYSTEM TOKENS ──
+const VS = {
+  cream:'#F6EFE4', sand:'#E2D0B8', terracotta:'#C97B55', clay:'#A85C3A',
+  sage:'#7BA899', moss:'#4E7B6F', slate:'#3D5A6C', ink:'#1E2D3A',
+  mist:'#D8E6E2', blush:'#F0D9CC',
+};
+
+// ── STAGE LABELS (taxonomy — consistent throughout) ──
 const STAGE_LABELS = [
-  { id:"opening",   label:"Free time opens",           emotion:"Relief · Possibility",       color:"#6EC6CA" },
-  { id:"intention", label:"Intention surfaces",         emotion:"Hope · Motivation",           color:"#5AAFB4" },
-  { id:"friction",  label:"Friction appears",           emotion:"Hesitation · Uncertainty",    color:"#D4A853" },
-  { id:"pull",      label:"The phone is already there", emotion:"Surrender · Autopilot",       color:"#C97B3A" },
-  { id:"default",   label:"Passive leisure takes over", emotion:"Numbness · Detachment",       color:"#A0522D" },
-  { id:"aftermath", label:"The aftermath",              emotion:"Guilt · Emptiness",           color:"#7A3B2E" },
+  {id:'opening',   label:'Free time opens',           emotion:'Relief · Possibility',    color:VS.sage},
+  {id:'intention', label:'Intention surfaces',         emotion:'Hope · Motivation',        color:VS.moss},
+  {id:'friction',  label:'Friction appears',           emotion:'Hesitation · Uncertainty', color:VS.terracotta},
+  {id:'pull',      label:'The phone is already there', emotion:'Surrender · Autopilot',    color:VS.clay},
+  {id:'default',   label:'Passive leisure takes over', emotion:'Numbness · Detachment',    color:'#A85C3A'},
+  {id:'aftermath', label:'The aftermath',              emotion:'Guilt · Emptiness',        color:VS.slate},
 ];
 
-// ══════════════════════════════════════════════════════════
-// IDENTITIES — each has its own arc shape + quotes per stage
-// arcY[i] = 0..1, higher = lower on canvas (more drifted)
-// ══════════════════════════════════════════════════════════
+// ── IDENTITIES ──
 const IDENTITIES = {
-  default: {
-    id: "default",
-    label: "Average adult",
-    emoji: "🧑",
-    color: "#5AAFB4",
-    description: "Full-time employed, no children, ages 25–44 (US baseline)",
-    source: "BLS ATUS 2024",
-    arcY: [0.12, 0.20, 0.42, 0.60, 0.76, 0.88],
-    stages: {
-      opening:   {
-        inner: '"Finally, some time for myself."',
-        context: "Work ends. A gap appears — 2–3 hours before sleep. The default question: what now?",
-        pulls: [],
-        quotes: [
-          { text: "It's 9pm and I have maybe 90 minutes before I should sleep. I always think I'll do something meaningful with it.", source: "r/productivity", url: "https://www.reddit.com/r/productivity" },
-          { text: "Free time feels like a test I haven't studied for.", source: "r/Adulting", url: "https://www.reddit.com/r/Adulting" },
-        ]
-      },
-      intention: {
-        inner: '"I could read, go for a walk, call a friend…"',
-        context: "A brief window where meaningful leisure feels genuinely possible. Intention peaks here.",
-        pulls: [],
-        quotes: [
-          { text: "Every single evening I tell myself tonight I'll read or exercise. Every single evening I end up on my phone.", source: "r/productivity", url: "https://www.reddit.com/r/productivity" },
-          { text: "I have a whole list of things I want to do with my free time. I look at it sometimes. Then I open YouTube.", source: "r/nosurf", url: "https://www.reddit.com/r/nosurf" },
-        ]
-      },
-      friction:  {
-        inner: '"But I\'m tired. Where did I put that book? It\'s already 9pm…"',
-        context: "Fatigue, decision effort, low energy, time scarcity — the gap between intention and conditions opens.",
-        pulls: ["Exhaustion from work", "No clear plan", "Limited time left", "Decision fatigue"],
-        quotes: [
-          { text: "The problem isn't wanting to do things. It's that after work, even the smallest task feels like lifting a car.", source: "r/Adulting", url: "https://www.reddit.com/r/Adulting" },
-          { text: "I don't choose to scroll. I just... don't choose not to.", source: "r/nosurf", url: "https://www.reddit.com/r/nosurf" },
-          { text: "Decision fatigue is real. By 8pm I genuinely cannot pick what to do so I just do nothing — which means TV.", source: "r/productivity", url: "https://www.reddit.com/r/productivity" },
-        ]
-      },
-      pull:      {
-        inner: '"I\'ll just check one thing…"',
-        context: "The lowest-friction option wins. The device is present, warm, effortless. No activation energy required.",
-        pulls: ["Always-on apps", "No stopping points", "Algorithmic pull", "Smartphone always within reach"],
-        quotes: [
-          { text: "I pick up my phone to check the time and it's an hour later.", source: "Ofcom Online Nation 2025 (qualitative)", url: "https://www.ofcom.org.uk/media-use-and-attitudes/online-habits/from-apps-to-ai-search-how-the-uk-goes-online-in-2025" },
-          { text: "My phone is always within arm's reach. Every other option requires getting up.", source: "r/nosurf", url: "https://www.reddit.com/r/nosurf" },
-        ]
-      },
-      default:   {
-        inner: '"It\'s been two hours."',
-        context: "Scrolling, streaming, watching — not chosen, but defaulted into. Systems held the door open.",
-        pulls: ["Infinite scroll", "Autoplay", "Platform stickiness"],
-        quotes: [
-          { text: "I look up and two hours have passed. I wasn't even enjoying it. I was just... there.", source: "r/nosurf", url: "https://www.reddit.com/r/nosurf" },
-          { text: "It's not that TV is so good. It's that stopping requires a decision and starting didn't.", source: "r/television", url: "https://www.reddit.com/r/television" },
-        ]
-      },
-      aftermath: {
-        inner: '"I wasted it again."',
-        context: "The gap between intention and outcome becomes felt. But the framing of personal failure obscures the systems that produced it.",
-        pulls: ["Self-blame", "Guilt loop", "Resolve to 'do better tomorrow'"],
-        quotes: [
-          { text: "The worst part isn't wasting the evening. It's the self-hatred after. And then doing it again the next day.", source: "r/productivity", url: "https://www.reddit.com/r/productivity" },
-          { text: "I keep treating it like a willpower problem. Maybe it's an environment problem.", source: "r/nosurf", url: "https://www.reddit.com/r/nosurf" },
-        ]
-      },
+  default:{
+    id:'default',label:'Average adult',emoji:'🧑',color:'#3D8B6E',  // distinctly darker teal-green
+    description:'Full-time employed, no children, ages 25–44 (US baseline)',
+    source:'BLS ATUS 2024',
+    arcY:[0.12,0.20,0.42,0.60,0.76,0.88],
+    stages:{
+      opening:{inner:'"Finally, some time for myself."',context:'Work ends. A gap appears — 2–3 hours before sleep. The default question: what now?',pulls:[],
+        quotes:[
+          {text:'It\'s 9pm and I have maybe 90 minutes before I should sleep. I always think I\'ll do something meaningful with it.',source:'r/productivity',url:'https://www.reddit.com/r/productivity'},
+          {text:'Free time feels like a test I haven\'t studied for.',source:'r/Adulting',url:'https://www.reddit.com/r/Adulting'},
+        ]},
+      intention:{inner:'"I could read, go for a walk, call a friend…"',context:'A brief window where meaningful leisure feels genuinely possible. Intention peaks here.',pulls:[],
+        quotes:[
+          {text:'Every single evening I tell myself tonight I\'ll read or exercise. Every single evening I end up on my phone.',source:'r/productivity',url:'https://www.reddit.com/r/productivity'},
+          {text:'I have a whole list of things I want to do with my free time. I look at it sometimes. Then I open YouTube.',source:'r/nosurf',url:'https://www.reddit.com/r/nosurf'},
+        ]},
+      friction:{inner:'"But I\'m tired. Where did I put that book? It\'s already 9pm…"',context:'Fatigue, decision effort, low energy, time scarcity — the gap between intention and conditions opens.',pulls:['Exhaustion from work','No clear plan','Limited time left','Decision fatigue'],
+        quotes:[
+          {text:'The problem isn\'t wanting to do things. It\'s that after work, even the smallest task feels like lifting a car.',source:'r/Adulting',url:'https://www.reddit.com/r/Adulting'},
+          {text:'I don\'t choose to scroll. I just... don\'t choose not to.',source:'r/nosurf',url:'https://www.reddit.com/r/nosurf'},
+          {text:'Decision fatigue is real. By 8pm I genuinely cannot pick what to do so I just do nothing — which means TV.',source:'r/productivity',url:'https://www.reddit.com/r/productivity'},
+        ]},
+      pull:{inner:'"I\'ll just check one thing…"',context:'The lowest-friction option wins. The device is present, warm, effortless. No activation energy required.',pulls:['Always-on apps','No stopping points','Algorithmic pull'],
+        quotes:[
+          {text:'I pick up my phone to check the time and it\'s an hour later.',source:'Ofcom Online Nation 2025',url:'https://www.ofcom.org.uk/media-use-and-attitudes/online-habits/from-apps-to-ai-search-how-the-uk-goes-online-in-2025'},
+          {text:'My phone is always within arm\'s reach. Every other option requires getting up.',source:'r/nosurf',url:'https://www.reddit.com/r/nosurf'},
+        ]},
+      default:{inner:'"It\'s been two hours."',context:'Scrolling, streaming, watching — not chosen, but defaulted into. Systems held the door open.',pulls:['Infinite scroll','Autoplay','Platform stickiness'],
+        quotes:[
+          {text:'I look up and two hours have passed. I wasn\'t even enjoying it. I was just... there.',source:'r/nosurf',url:'https://www.reddit.com/r/nosurf'},
+          {text:'It\'s not that TV is so good. It\'s that stopping requires a decision and starting didn\'t.',source:'r/television',url:'https://www.reddit.com/r/television'},
+        ]},
+      aftermath:{inner:'"I wasted it again."',context:'The gap between intention and outcome becomes felt. But the framing of personal failure obscures the systems that produced it.',pulls:['Self-blame','Guilt loop','Resolve to do better tomorrow'],
+        quotes:[
+          {text:'The worst part isn\'t wasting the evening. It\'s the self-hatred after. And then doing it again the next day.',source:'r/productivity',url:'https://www.reddit.com/r/productivity'},
+          {text:'I keep treating it like a willpower problem. Maybe it\'s an environment problem.',source:'r/nosurf',url:'https://www.reddit.com/r/nosurf'},
+        ]},
     }
   },
-
-  parent: {
-    id: "parent",
-    label: "Parent of young children",
-    emoji: "👶",
-    color: "#E06B8B",
-    description: "Caregiver with children under 10. Free time arrives in fragments after bedtime.",
-    source: "BLS ATUS 2024 · ABS 2024 · r/Parenting",
-    arcY: [0.10, 0.16, 0.60, 0.74, 0.85, 0.92],
-    stages: {
-      opening:   {
-        inner: '"They\'re finally asleep."',
-        context: "Free time opens only after bedtime — often 8:30–9pm. The window is short, the energy is low, and the stakes feel high.",
-        pulls: [],
-        quotes: [
-          { text: "My free time starts at 8:30pm when the kids go to sleep. By then I have maybe 90 minutes before I need to sleep too.", source: "r/Parenting", url: "https://www.reddit.com/r/Parenting" },
-          { text: "Almost half of Australian women aged 35–44 always or often feel rushed or pressed for time.", source: "ABS Time Use Survey 2024", url: "https://www.abs.gov.au/statistics/people/people-and-communities/how-australians-use-their-time/latest-release" },
-        ]
-      },
-      intention: {
-        inner: '"Maybe I can read for a bit, or work on that project…"',
-        context: "Intention is brief and fragile. The window is too short to feel 'real', but long enough to feel guilty about wasting.",
-        pulls: [],
-        quotes: [
-          { text: "I have 45 minutes. I keep thinking I should use it for something meaningful but then I feel paralyzed about what to pick.", source: "r/Parenting", url: "https://www.reddit.com/r/Parenting" },
-          { text: "I used to have hobbies. Now my hobby is sitting quietly.", source: "r/daddit", url: "https://www.reddit.com/r/daddit" },
-        ]
-      },
-      friction:  {
-        inner: '"I\'m too exhausted. It\'s only 45 minutes anyway."',
-        context: "The caregiving day depletes cognitive and physical resources completely. The 'it's not enough time' thought closes the intention window fast.",
-        pulls: ["Post-caregiving depletion", "Time confetti — gaps too small", "Can't start something I can't finish", "Mental load still running"],
-        quotes: [
-          { text: "When you have 45 minutes of free time after the kids are in bed, you don't choose — you just collapse into whatever's already on.", source: "r/Parenting", url: "https://www.reddit.com/r/Parenting" },
-          { text: "I'm too tired to read, too wired to sleep. The phone is the perfect middle ground — which is exactly why it's a problem.", source: "r/mommit", url: "https://www.reddit.com/r/mommit" },
-          { text: "My leisure is interrupted on average every 20 minutes by a child. I've stopped starting things that need focus.", source: "r/Parenting", url: "https://www.reddit.com/r/Parenting" },
-        ]
-      },
-      pull:      {
-        inner: '"Just a quick scroll while I decompress."',
-        context: "The phone becomes a decompression tool — legitimate relief that slides into passive consumption.",
-        pulls: ["Phone as decompression ritual", "No social coordination required", "Algorithmically personalised"],
-        quotes: [
-          { text: "Scrolling isn't fun. It's recovery. The difference is I never actually recover.", source: "r/mommit", url: "https://www.reddit.com/r/mommit" },
-          { text: "I deserve to just exist for a moment without doing anything. And somehow that always means my phone.", source: "r/Parenting", url: "https://www.reddit.com/r/Parenting" },
-        ]
-      },
-      default:   {
-        inner: '"It\'s midnight. When did that happen."',
-        context: "The short window collapses entirely. Sleep is now delayed, making tomorrow's depletion worse.",
-        pulls: ["Revenge bedtime procrastination", "Sleep deprivation loop"],
-        quotes: [
-          { text: "Revenge bedtime procrastination is real. I stay up too late doing nothing because it's the only time that's mine.", source: "r/beyondthebump", url: "https://www.reddit.com/r/beyondthebump" },
-          { text: "Parents with children under 6 average only 2.7 hours of leisure per day on weekdays.", source: "BLS ATUS 2024", url: "https://www.bls.gov/news.release/atus.t11b.htm" },
-        ]
-      },
-      aftermath: {
-        inner: '"I should have slept. I should have done something. I just should have."',
-        context: "The guilt layer is double: guilt for not doing something meaningful, and guilt for not sleeping.",
-        pulls: ["Sleep debt guilt", "Parenting guilt", "Productivity guilt"],
-        quotes: [
-          { text: "I'm failing at rest, work, and parenting simultaneously. That's a special kind of exhausted.", source: "r/Parenting", url: "https://www.reddit.com/r/Parenting" },
-          { text: "The problem isn't willpower. The problem is I have no time and I'm using the time I do have wrong.", source: "r/mommit", url: "https://www.reddit.com/r/mommit" },
-        ]
-      },
+  student:{
+    id:'student',label:'University student',emoji:'🎓',color:'#5B4FCF',  // indigo-violet
+    description:'18–24, balancing study, social life, and guilt about free time',
+    source:'BLS ATUS 2024 (20–24) · r/college · r/university',
+    arcY:[0.14,0.22,0.48,0.62,0.74,0.88],
+    stages:{
+      opening:{inner:'"Finally no lectures. But I should probably be studying…"',context:'Free time is perpetually shadowed by academic obligation. The line between rest and avoidance is blurry.',pulls:[],
+        quotes:[
+          {text:'I have so much free time technically. I just never feel like it\'s really free because there\'s always something I should be doing.',source:'r/college',url:'https://www.reddit.com/r/college'},
+          {text:'Student life paradox: you have the most free time of your life and feel the most guilty for using it.',source:'r/university',url:'https://www.reddit.com/r/university'},
+        ]},
+      intention:{inner:'"I should go outside, or call someone, or actually read for fun…"',context:'Leisure intention competes with academic guilt. Even choosing entertainment feels like a loaded decision.',pulls:[],
+        quotes:[
+          {text:'I used to read for fun in high school. In university I can\'t bring myself to read anything that isn\'t for class.',source:'r/college',url:'https://www.reddit.com/r/college'},
+          {text:'My idea of free time has become "time I\'m not actively being productive." It\'s not the same thing.',source:'r/college',url:'https://www.reddit.com/r/college'},
+        ]},
+      friction:{inner:'"But if I\'m relaxing I\'m not studying. And if I\'m studying I\'m not resting. I just open TikTok."',context:'Decision paralysis between work and rest creates a third category: passive avoidance that satisfies neither.',pulls:['Academic guilt','Social comparison (everyone seems to be doing more)','Procrastination loop','Schedule anxiety'],
+        quotes:[
+          {text:'Passive scrolling is the perfect procrastination: you\'re not resting AND you\'re not working. It\'s the worst of both.',source:'r/college',url:'https://www.reddit.com/r/college'},
+          {text:'I can\'t enjoy free time because I feel like I\'m wasting it, and I can\'t work because I\'m burnt out.',source:'r/college',url:'https://www.reddit.com/r/college'},
+          {text:'Student burnout is not about doing too much. It\'s about never feeling like what you\'re doing is enough.',source:'r/university',url:'https://www.reddit.com/r/university'},
+        ]},
+      pull:{inner:'"Just 20 minutes of YouTube and then I\'ll start."',context:'The phone is the perfect procrastination tool — not quite rest, not quite work. Algorithmically optimised to keep that ambiguity alive.',pulls:['YouTube/TikTok as background noise','Studying with phone nearby','Always 5 more minutes'],
+        quotes:[
+          {text:'I literally cannot sit down to study without first opening my phone. It\'s become a ritual. A bad one.',source:'r/college',url:'https://www.reddit.com/r/college'},
+          {text:'"Just 20 minutes" has never once been 20 minutes.',source:'r/productivity',url:'https://www.reddit.com/r/productivity'},
+        ]},
+      default:{inner:'"It\'s 2am. I did neither."',context:'Neither studied nor rested. The evening ends in a failure state for both work and leisure.',pulls:['Revenge bedtime procrastination','Sleep debt','Doomscrolling'],
+        quotes:[
+          {text:'I go to sleep having neither relaxed nor finished my work. Every single night.',source:'r/college',url:'https://www.reddit.com/r/college'},
+          {text:'University is the first time I noticed my free time had stopped being fun.',source:'r/university',url:'https://www.reddit.com/r/university'},
+        ]},
+      aftermath:{inner:'"I should have studied. I should have slept. I should have done something."',context:'Triple guilt — academic, personal, and temporal — stacks. Without a framework for legitimate rest, no choice feels right.',pulls:['Academic guilt','Health guilt','Leisure guilt simultaneously'],
+        quotes:[
+          {text:'I feel guilty for resting and guilty for not doing it properly. The only thing I don\'t feel guilty about is doomscrolling because at least I\'m not pretending it\'s anything else.',source:'r/college',url:'https://www.reddit.com/r/college'},
+        ]},
     }
   },
-
-  overworked: {
-    id: "overworked",
-    label: "Overworked / East Asian work culture",
-    emoji: "⏱",
-    color: "#E8834A",
-    description: "High-pressure work culture (Japan, S. Korea, or finance/tech). Leisure time is compressed and guilt-laden.",
-    source: "Japan Statistics Bureau 2021 · r/japanlife · Wikipedia Karoshi · OECD",
-    arcY: [0.08, 0.14, 0.70, 0.80, 0.88, 0.95],
-    stages: {
-      opening:   {
-        inner: '"I have an hour before I should prep for tomorrow."',
-        context: "Japan averages 215 minutes of leisure per day — one of the lowest in OECD. Free time is a compressed margin, not an open space.",
-        pulls: [],
-        quotes: [
-          { text: "疲れすぎて、何もできない。(Too exhausted to do anything.)", source: "r/japanlife", url: "https://www.reddit.com/r/japanlife" },
-          { text: "Japan: average leisure time is 3 hours 35 minutes per day — compared to Norway's 6 hours 9 minutes.", source: "OECD Time Use Database", url: "https://stats.oecd.org/index.aspx?queryid=54757" },
-        ]
-      },
-      intention: {
-        inner: '"Maybe I can finally read that book I bought three months ago."',
-        context: "Intention exists — but it's tinged with the knowledge that rest has been postponed for weeks.",
-        pulls: [],
-        quotes: [
-          { text: "I bought a guitar two years ago. It's still in the corner of my room. I look at it every night.", source: "r/japanlife", url: "https://www.reddit.com/r/japanlife" },
-          { text: "Karoshi means death from overwork. The culture that produced it also produced the idea that leisure is something you earn.", source: "Wikipedia — Karoshi", url: "https://en.wikipedia.org/wiki/Karoshi" },
-        ]
-      },
-      friction:  {
-        inner: '"It\'s already 10pm. Why start something now."',
-        context: "Chronic overwork depletes motivation at the structural level. The feeling isn't 'I don't want to' — it's 'I can't begin.'",
-        pulls: ["Chronic exhaustion — not tonight-exhaustion", "Work guilt — shouldn't I prepare?", "Time too short to feel worthwhile", "Social pressure to be productive"],
-        quotes: [
-          { text: "I come home at 10pm. I eat. I sit. I sleep. On weekends I try to have a life but mostly I recover.", source: "r/japanlife", url: "https://www.reddit.com/r/japanlife" },
-          { text: "I don't even have the energy to decide what I want to do. That decision alone is exhausting.", source: "r/korea (translated)", url: "https://www.reddit.com/r/korea" },
-          { text: "Nemui (sleepiness) has become Japan's dominant form of passive rest.", source: "Japan Statistics Bureau Time Use 2021", url: "https://www.stat.go.jp/english/data/shakai/index.html" },
-        ]
-      },
-      pull:      {
-        inner: '"YouTube is already open."',
-        context: "The phone requires zero activation energy. After 12 hours of work requiring constant performance, zero is all that's available.",
-        pulls: ["Work performance pressure still active", "Phone as only truly private space", "No social coordination required"],
-        quotes: [
-          { text: "My phone is the only thing in my day that doesn't judge me. It just gives.", source: "r/japanlife", url: "https://www.reddit.com/r/japanlife" },
-          { text: "South Korea has the highest smartphone penetration globally. After 12-hour workdays, the phone is where night goes.", source: "Pew Research 2024", url: "https://www.pewresearch.org/internet/2024/01/31/americans-use-of-mobile-technology-and-home-broadband/" },
-        ]
-      },
-      default:   {
-        inner: '"Another night gone."',
-        context: "The evening — already compressed — disappears entirely. Sleep is delayed, deepening tomorrow's depletion cycle.",
-        pulls: ["Sleep debt compound", "No recovery between cycles"],
-        quotes: [
-          { text: "I watch YouTube until 1am not because I'm enjoying it but because it's the only way to stop thinking about work.", source: "r/japanlife", url: "https://www.reddit.com/r/japanlife" },
-          { text: "Japan's karoshi problem is not just about death. It's about the millions of people who are living without having lived.", source: "The Guardian (referenced via Wikipedia Karoshi)", url: "https://en.wikipedia.org/wiki/Karoshi" },
-        ]
-      },
-      aftermath: {
-        inner: '"I should rest properly. Tomorrow."',
-        context: "Rest is perpetually deferred. 'Tomorrow' never comes because the structural conditions don't change.",
-        pulls: ["Structural deferral", "Cultural permission deficit — rest as weakness"],
-        quotes: [
-          { text: "Vacation guilt is a thing in Japan. Even when I'm off I feel like I should be doing something.", source: "r/japanlife", url: "https://www.reddit.com/r/japanlife" },
-          { text: "The problem isn't individuals not knowing how to rest. It's a culture that hasn't decided rest is a right.", source: "Our World in Data — Time Use", url: "https://ourworldindata.org/time-use" },
-        ]
-      },
+  parent:{
+    id:'parent',label:'Parent of young children',emoji:'👶',color:'#E06B8B',
+    description:'Caregiver with children under 10. Free time arrives in fragments after bedtime.',
+    source:'BLS ATUS 2024 · ABS 2024 · r/Parenting',
+    arcY:[0.10,0.16,0.60,0.74,0.85,0.92],
+    stages:{
+      opening:{inner:'"They\'re finally asleep."',context:'Free time opens only after bedtime — often 8:30–9pm. The window is short, the energy is low.',pulls:[],
+        quotes:[
+          {text:'My free time starts at 8:30pm when the kids go to sleep. By then I have maybe 90 minutes before I need to sleep too.',source:'r/Parenting',url:'https://www.reddit.com/r/Parenting'},
+          {text:'49% of Australian women aged 35–44 always or often feel rushed or pressed for time.',source:'ABS Time Use Survey 2024',url:'https://www.abs.gov.au/statistics/people/people-and-communities/how-australians-use-their-time/latest-release'},
+        ]},
+      intention:{inner:'"Maybe I can read for a bit, or work on that project…"',context:'Intention is brief and fragile. The window is too short to feel "real", but long enough to feel guilty about wasting.',pulls:[],
+        quotes:[
+          {text:'I have 45 minutes. I keep thinking I should use it for something meaningful but then I feel paralyzed about what to pick.',source:'r/Parenting',url:'https://www.reddit.com/r/Parenting'},
+          {text:'I used to have hobbies. Now my hobby is sitting quietly.',source:'r/daddit',url:'https://www.reddit.com/r/daddit'},
+        ]},
+      friction:{inner:'"I\'m too exhausted. It\'s only 45 minutes anyway."',context:'Post-caregiving depletion is total. The "it\'s not enough time" thought closes the intention window fast.',pulls:['Post-caregiving depletion','Time confetti','Can\'t start something I can\'t finish','Mental load still running'],
+        quotes:[
+          {text:'When you have 45 minutes of free time after the kids are in bed, you don\'t choose — you just collapse into whatever\'s already on.',source:'r/Parenting',url:'https://www.reddit.com/r/Parenting'},
+          {text:'I\'m too tired to read, too wired to sleep. The phone is the perfect middle ground — which is exactly why it\'s a problem.',source:'r/mommit',url:'https://www.reddit.com/r/mommit'},
+          {text:'My leisure is interrupted on average every 20 minutes. I\'ve stopped starting things that need focus.',source:'r/Parenting',url:'https://www.reddit.com/r/Parenting'},
+        ]},
+      pull:{inner:'"Just a quick scroll while I decompress."',context:'The phone becomes a decompression tool — legitimate relief that slides into passive consumption.',pulls:['Phone as decompression ritual','No social coordination required'],
+        quotes:[
+          {text:'Scrolling isn\'t fun. It\'s recovery. The difference is I never actually recover.',source:'r/mommit',url:'https://www.reddit.com/r/mommit'},
+          {text:'I deserve to just exist for a moment without doing anything. And somehow that always means my phone.',source:'r/Parenting',url:'https://www.reddit.com/r/Parenting'},
+        ]},
+      default:{inner:'"It\'s midnight. When did that happen."',context:'The short window collapses. Sleep is now delayed, making tomorrow\'s depletion worse.',pulls:['Revenge bedtime procrastination','Sleep deprivation loop'],
+        quotes:[
+          {text:'Revenge bedtime procrastination is real. I stay up too late doing nothing because it\'s the only time that\'s mine.',source:'r/beyondthebump',url:'https://www.reddit.com/r/beyondthebump'},
+          {text:'Parents with children under 6 average only 2.7 hours of leisure per day on weekdays.',source:'BLS ATUS 2024',url:'https://www.bls.gov/news.release/atus.t11b.htm'},
+        ]},
+      aftermath:{inner:'"I should have slept. I should have done something."',context:'Double guilt: failed to rest meaningfully AND failed to sleep adequately.',pulls:['Sleep debt guilt','Parenting guilt','Productivity guilt'],
+        quotes:[
+          {text:'I\'m failing at rest, work, and parenting simultaneously. That\'s a special kind of exhausted.',source:'r/Parenting',url:'https://www.reddit.com/r/Parenting'},
+          {text:'The problem isn\'t willpower. The problem is I have no time and I\'m using the time I do have wrong.',source:'r/mommit',url:'https://www.reddit.com/r/mommit'},
+        ]},
     }
   },
-
-  lowwage: {
-    id: "lowwage",
-    label: "Low-income / precarious worker",
-    emoji: "💰",
-    color: "#7B68C8",
-    description: "Working multiple jobs or in low-wage employment. Leisure is constrained by both time and cost.",
-    source: "BLS ATUS 2024 · r/povertyfinance · Pew Research 2024",
-    arcY: [0.10, 0.18, 0.55, 0.68, 0.80, 0.90],
-    stages: {
-      opening:   {
-        inner: '"Finally off. But I\'m already thinking about the next shift."',
-        context: "Free time arrives but it's shadowed by financial stress, schedule uncertainty, and physical fatigue from labour-intensive work.",
-        pulls: [],
-        quotes: [
-          { text: "I work two jobs. When I have free time I'm either too tired to do anything or too anxious about money to enjoy it.", source: "r/povertyfinance", url: "https://www.reddit.com/r/povertyfinance" },
-          { text: "Low-income workers under $840/week average 3.24 hours of weekday leisure — and 56% of it is TV.", source: "BLS ATUS 2024", url: "https://www.bls.gov/news.release/atus.t11b.htm" },
-        ]
-      },
-      intention: {
-        inner: '"I want to do something. But what? That doesn\'t cost money?"',
-        context: "Intention is filtered through cost. Most 'meaningful leisure' activities have a barrier — equipment, transport, membership, or time.",
-        pulls: [],
-        quotes: [
-          { text: "What am I going to do — go to a concert? I can't afford that. So yeah, I'm on my phone.", source: "r/povertyfinance", url: "https://www.reddit.com/r/povertyfinance" },
-          { text: "I want to do things but everything costs money. Even the gym. Even the bus to the park.", source: "r/povertyfinance", url: "https://www.reddit.com/r/povertyfinance" },
-        ]
-      },
-      friction:  {
-        inner: '"I\'m too tired, and everything I want to do is either too expensive or too far."',
-        context: "The friction gap is compounded by cost and access. Public leisure infrastructure (libraries, parks, community centres) has eroded in many areas.",
-        pulls: ["Cost barrier to meaningful leisure", "Transport access", "No nearby public leisure space", "Physical fatigue from manual work"],
-        quotes: [
-          { text: "The library is free but I need a way to get there. The park is free but I need energy to actually go.", source: "r/povertyfinance", url: "https://www.reddit.com/r/povertyfinance" },
-          { text: "People act like free time is the only barrier to meaningful leisure. Money is the barrier. Energy is the barrier. Safety is the barrier.", source: "r/povertyfinance", url: "https://www.reddit.com/r/povertyfinance" },
-          { text: "Smartphone is the only entertainment I can definitely afford.", source: "r/povertyfinance", url: "https://www.reddit.com/r/povertyfinance" },
-        ]
-      },
-      pull:      {
-        inner: '"The phone is free. It\'s already paid for."',
-        context: "The smartphone becomes the universal leisure equaliser — the one option that has no incremental cost.",
-        pulls: ["Zero marginal cost", "Already paid for", "Available anywhere, anytime"],
-        quotes: [
-          { text: "My phone is the cheapest entertainment I have. It's already paid for in my plan. Everything else costs extra.", source: "r/povertyfinance", url: "https://www.reddit.com/r/povertyfinance" },
-          { text: "Pew Research 2024: lower-income adults are significantly more likely to use their smartphone as their primary internet device.", source: "Pew Research Mobile Technology 2024", url: "https://www.pewresearch.org/internet/2024/01/31/americans-use-of-mobile-technology-and-home-broadband/" },
-        ]
-      },
-      default:   {
-        inner: '"At least this doesn\'t cost anything."',
-        context: "Passive digital leisure fills the evening not as a first choice but as the only accessible one. The inequality of leisure infrastructure becomes invisible.",
-        pulls: ["Default is the only affordable option"],
-        quotes: [
-          { text: "I don't scroll because I love it. I scroll because it's there and it's free and I'm tired and it asks nothing of me.", source: "r/povertyfinance", url: "https://www.reddit.com/r/povertyfinance" },
-          { text: "People without a high school diploma average 2.82 hours of TV on weekdays — more than any other group.", source: "BLS ATUS 2024", url: "https://www.bls.gov/news.release/atus.t11b.htm" },
-        ]
-      },
-      aftermath: {
-        inner: '"Another night watching stuff I don\'t even like."',
-        context: "The guilt loop here carries a particular weight: the sense that leisure options are determined by income, not choice.",
-        pulls: ["Structural leisure inequality", "Guilt without agency to change"],
-        quotes: [
-          { text: "I feel guilty about how I spend my evenings. But the things I'd rather do — I genuinely can't afford them.", source: "r/povertyfinance", url: "https://www.reddit.com/r/povertyfinance" },
-          { text: "The problem is framed as one of individual habit. But for a lot of people the options just aren't there.", source: "r/povertyfinance", url: "https://www.reddit.com/r/povertyfinance" },
-        ]
-      },
+  overworked:{
+    id:'overworked',label:'Overworked / East Asian work culture',emoji:'⏱',color:VS.terracotta,
+    description:'High-pressure work culture (Japan, S. Korea, finance/tech). Leisure time is compressed and guilt-laden.',
+    source:'Japan Statistics Bureau 2021 · r/japanlife · Wikipedia Karoshi · OECD',
+    arcY:[0.08,0.14,0.70,0.80,0.88,0.95],
+    stages:{
+      opening:{inner:'"I have an hour before I should prep for tomorrow."',context:'Japan averages 215 minutes of leisure/day — one of the lowest in OECD. Free time is a compressed margin, not an open space.',pulls:[],
+        quotes:[
+          {text:'疲れすぎて、何もできない。(Too exhausted to do anything.)',source:'r/japanlife',url:'https://www.reddit.com/r/japanlife'},
+          {text:'Japan: average leisure time is 3 hours 35 minutes per day — compared to Norway\'s 6 hours 9 minutes.',source:'OECD Time Use Database',url:'https://stats.oecd.org/index.aspx?queryid=54757'},
+        ]},
+      intention:{inner:'"Maybe I can finally read that book I bought three months ago."',context:'Intention exists — but tinged with the knowledge that rest has been postponed for weeks.',pulls:[],
+        quotes:[
+          {text:'I bought a guitar two years ago. It\'s still in the corner of my room. I look at it every night.',source:'r/japanlife',url:'https://www.reddit.com/r/japanlife'},
+          {text:'Karoshi means death from overwork. The culture that produced it also produced the idea that leisure is something you earn.',source:'Wikipedia — Karoshi',url:'https://en.wikipedia.org/wiki/Karoshi'},
+        ]},
+      friction:{inner:'"It\'s already 10pm. Why start something now."',context:'Chronic overwork depletes motivation at the structural level. The feeling isn\'t "I don\'t want to" — it\'s "I can\'t begin."',pulls:['Chronic exhaustion','Work guilt','Time too short','Cultural pressure to be productive'],
+        quotes:[
+          {text:'I come home at 10pm. I eat. I sit. I sleep. On weekends I try to have a life but mostly I recover.',source:'r/japanlife',url:'https://www.reddit.com/r/japanlife'},
+          {text:'I don\'t even have the energy to decide what I want to do. That decision alone is exhausting.',source:'r/korea (translated)',url:'https://www.reddit.com/r/korea'},
+          {text:'Nemui (sleepiness) has become Japan\'s dominant form of passive rest.',source:'Japan Statistics Bureau 2021',url:'https://www.stat.go.jp/english/data/shakai/index.html'},
+        ]},
+      pull:{inner:'"YouTube is already open."',context:'After 12 hours of work requiring constant performance, zero activation energy is all that\'s available.',pulls:['Work performance pressure still active','Phone as only private space','No social coordination required'],
+        quotes:[
+          {text:'My phone is the only thing in my day that doesn\'t judge me. It just gives.',source:'r/japanlife',url:'https://www.reddit.com/r/japanlife'},
+          {text:'South Korea has the highest smartphone penetration globally. After 12-hour workdays, the phone is where the night goes.',source:'Pew Research 2024',url:'https://www.pewresearch.org/internet/2024/01/31/americans-use-of-mobile-technology-and-home-broadband/'},
+        ]},
+      default:{inner:'"Another night gone."',context:'The evening — already compressed — disappears entirely. Sleep is delayed, deepening the depletion cycle.',pulls:['Sleep debt compound','No recovery between cycles'],
+        quotes:[
+          {text:'I watch YouTube until 1am not because I\'m enjoying it but because it\'s the only way to stop thinking about work.',source:'r/japanlife',url:'https://www.reddit.com/r/japanlife'},
+          {text:'Japan\'s karoshi problem is not just about death. It\'s about the millions living without having lived.',source:'Guardian / Wikipedia Karoshi',url:'https://en.wikipedia.org/wiki/Karoshi'},
+        ]},
+      aftermath:{inner:'"I should rest properly. Tomorrow."',context:'Rest is perpetually deferred. "Tomorrow" never comes because the structural conditions don\'t change.',pulls:['Structural deferral','Cultural permission deficit'],
+        quotes:[
+          {text:'Vacation guilt is a thing in Japan. Even when I\'m off I feel like I should be doing something.',source:'r/japanlife',url:'https://www.reddit.com/r/japanlife'},
+          {text:'The problem isn\'t individuals not knowing how to rest. It\'s a culture that hasn\'t decided rest is a right.',source:'Our World in Data — Time Use',url:'https://ourworldindata.org/time-use'},
+        ]},
     }
   },
-
-  sabbath: {
-    id: "sabbath",
-    label: "Sabbath / religious rest observer",
-    emoji: "✦",
-    color: "#4CAF7D",
-    description: "Weekly structured rest — Shabbat (Jewish), Jumu'ah (Muslim), or Sunday observance. Rest is institutionally protected.",
-    source: "Pew Research Religion & Wellbeing 2019 · My Jewish Learning · Psychology Today 2013 · r/Judaism",
-    arcY: [0.15, 0.22, 0.25, 0.22, 0.18, 0.14],
-    stages: {
-      opening:   {
-        inner: '"Shabbat begins. The phone goes away."',
-        context: "For observant Jews, Shabbat begins Friday at sundown and lasts 25 hours. Technology is not permitted. The question of 'what to do' is already answered structurally.",
-        pulls: [],
-        quotes: [
-          { text: "Shabbat is the practice of stopping. Not because you've finished — but because stopping itself has value.", source: "My Jewish Learning", url: "https://www.myjewishlearning.com/article/shabbat-101/" },
-          { text: "The moment Shabbat starts, the week is over. There's nothing to do. That sounds like nothing, but it's everything.", source: "r/Judaism", url: "https://www.reddit.com/r/Judaism" },
-        ]
-      },
-      intention: {
-        inner: '"Tonight: dinner with family, talking, maybe a walk."',
-        context: "Intention is supported by ritual, not fighting against inertia. The activities are pre-decided by cultural practice.",
-        pulls: [],
-        quotes: [
-          { text: "I don't have to decide what to do on Shabbat. It's decided. That's the gift — the decision has already been made for me.", source: "r/Judaism", url: "https://www.reddit.com/r/Judaism" },
-          { text: "We light candles, we eat, we talk. No one is checking their phone. It's the most present I feel all week.", source: "r/Judaism", url: "https://www.reddit.com/r/Judaism" },
-        ]
-      },
-      friction:  {
-        inner: '"I notice the pull — but the structure holds."',
-        context: "The friction gap still exists psychologically, but it's pre-resolved by communal practice. The rule is external, not requiring daily willpower.",
-        pulls: ["FOMO about being offline", "Social media withdrawal"],
-        quotes: [
-          { text: "The first hour of Shabbat I always feel the pull to check my phone. Then it passes. Then I can't believe I ever thought that was relaxing.", source: "r/Judaism", url: "https://www.reddit.com/r/Judaism" },
-          { text: "Shabbat observers report significantly lower anxiety and higher life satisfaction than non-observers in the same community.", source: "Psychology Today — The Gift of Shabbat, 2013", url: "https://www.psychologytoday.com/us/blog/spiritual-wisdom-secular-times/201303/the-gift-of-shabbat" },
-        ]
-      },
-      pull:      {
-        inner: '"No phone, so... I talk to people."',
-        context: "Without the phone as default, the next easiest thing becomes social — conversation, food, walking. The 'default' is community, not content.",
-        pulls: [],
-        quotes: [
-          { text: "The thing about no phone on Shabbat is that you realize how often you reach for it when there's nothing else to do. And then you find something else to do.", source: "r/Judaism", url: "https://www.reddit.com/r/Judaism" },
-          { text: "Jumu'ah (Friday prayer) pulls the community together in a way that resets the week. The afternoon is for rest and family — not errands.", source: "r/islam", url: "https://www.reddit.com/r/islam" },
-        ]
-      },
-      default:   {
-        inner: '"We talked for hours. I forgot time."',
-        context: "Active leisure becomes the default when passive defaults are removed. The evening is spent in conversation, walking, reading — the activities rated most enjoyable.",
-        pulls: [],
-        quotes: [
-          { text: "Last Shabbat we talked for three hours at the table. I didn't notice time passing. That never happens with my phone.", source: "r/Judaism", url: "https://www.reddit.com/r/Judaism" },
-          { text: "The Shabbat version of me has better evenings than the weekday version. Every week I think I should import some of that.", source: "r/Judaism", url: "https://www.reddit.com/r/Judaism" },
-        ]
-      },
-      aftermath: {
-        inner: '"I feel rested. Actually rested."',
-        context: "When rest is structurally protected, the aftermath is restoration — not guilt. The loop doesn't close back on itself.",
-        pulls: [],
-        quotes: [
-          { text: "Havdalah ends Shabbat. There's a ritual for that too — to mark the transition. Even ending rest is intentional.", source: "r/Judaism", url: "https://www.reddit.com/r/Judaism" },
-          { text: "I come back from Shabbat feeling like I actually had a weekend. Most of my non-religious friends feel like they didn't.", source: "r/Judaism", url: "https://www.reddit.com/r/Judaism" },
-        ]
-      },
+  lowwage:{
+    id:'lowwage',label:'Low-income / precarious worker',emoji:'💰',color:'#7B68C8',
+    description:'Working multiple jobs or low-wage employment. Leisure constrained by both time and cost.',
+    source:'BLS ATUS 2024 · r/povertyfinance · Pew Research 2024',
+    arcY:[0.10,0.18,0.55,0.68,0.80,0.90],
+    stages:{
+      opening:{inner:'"Finally off. But I\'m already thinking about the next shift."',context:'Free time arrives shadowed by financial stress, schedule uncertainty, and physical fatigue from labour-intensive work.',pulls:[],
+        quotes:[
+          {text:'I work two jobs. When I have free time I\'m either too tired to do anything or too anxious about money to enjoy it.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+          {text:'Low-income workers under $840/week average 3.24 hours of weekday leisure — and 56% of it is TV.',source:'BLS ATUS 2024',url:'https://www.bls.gov/news.release/atus.t11b.htm'},
+        ]},
+      intention:{inner:'"I want to do something. But what doesn\'t cost money?"',context:'Intention is filtered through cost. Most meaningful leisure activities have a barrier — equipment, transport, membership.',pulls:[],
+        quotes:[
+          {text:'What am I going to do — go to a concert? I can\'t afford that. So yeah, I\'m on my phone.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+          {text:'I want to do things but everything costs money. Even the gym. Even the bus to the park.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+        ]},
+      friction:{inner:'"I\'m too tired, and everything I want to do costs money or is too far."',context:'Friction is compounded by cost and access. Public leisure infrastructure has eroded in many low-income areas.',pulls:['Cost barrier','Transport access','No nearby public leisure space','Physical fatigue from manual work'],
+        quotes:[
+          {text:'The library is free but I need a way to get there. The park is free but I need energy to actually go.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+          {text:'People act like free time is the only barrier to meaningful leisure. Money is the barrier. Energy is the barrier. Safety is the barrier.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+          {text:'Smartphone is the only entertainment I can definitely afford.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+        ]},
+      pull:{inner:'"The phone is free. It\'s already paid for."',context:'The smartphone becomes the universal leisure equaliser — the one option with no incremental cost.',pulls:['Zero marginal cost','Already paid for','Always available'],
+        quotes:[
+          {text:'My phone is the cheapest entertainment I have. Everything else costs extra.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+          {text:'Pew Research 2024: lower-income adults are significantly more likely to use their smartphone as their primary internet device.',source:'Pew Research Mobile Technology 2024',url:'https://www.pewresearch.org/internet/2024/01/31/americans-use-of-mobile-technology-and-home-broadband/'},
+        ]},
+      default:{inner:'"At least this doesn\'t cost anything."',context:'Passive digital leisure fills the evening not as a first choice but as the only accessible one.',pulls:['Default is the only affordable option'],
+        quotes:[
+          {text:'I don\'t scroll because I love it. I scroll because it\'s there and it\'s free and I\'m tired and it asks nothing of me.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+          {text:'People without a high school diploma average 2.82 hours of TV on weekdays — more than any other group.',source:'BLS ATUS 2024',url:'https://www.bls.gov/news.release/atus.t11b.htm'},
+        ]},
+      aftermath:{inner:'"Another night watching stuff I don\'t even like."',context:'The guilt loop here carries a particular weight: the sense that leisure options are determined by income, not choice.',pulls:['Structural leisure inequality','Guilt without agency to change'],
+        quotes:[
+          {text:'I feel guilty about how I spend my evenings. But the things I\'d rather do — I genuinely can\'t afford them.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+        ]},
     }
   },
-
-  diaspora: {
-    id: "diaspora",
-    label: "South Asian diaspora",
-    emoji: "🌏",
-    color: "#C0784A",
-    description: "Second-generation immigrant navigating cultural pressure around productivity and rest.",
-    source: "r/ABCDesis · r/SAUD · Pew Research Religion 2019",
-    arcY: [0.12, 0.18, 0.55, 0.65, 0.78, 0.92],
-    stages: {
-      opening:   {
-        inner: '"Free time. But should I be doing something productive?"',
-        context: "Free time carries cultural weight. Rest can feel like a sign of insufficient ambition — particularly in second-generation immigrant contexts shaped by sacrificial parental narratives.",
-        pulls: [],
-        quotes: [
-          { text: "I feel guilty resting. Like there's always something I should be doing. My parents didn't come here so I could watch TV.", source: "r/ABCDesis", url: "https://www.reddit.com/r/ABCDesis" },
-          { text: "Free time doesn't feel free. It feels like time I'm supposed to justify.", source: "r/ABCDesis", url: "https://www.reddit.com/r/ABCDesis" },
-        ]
-      },
-      intention: {
-        inner: '"I could call home, work on something, or... actually relax?"',
-        context: "Leisure competes with obligation. Calling family, upskilling, or 'productive rest' feel more legitimate than chosen enjoyment.",
-        pulls: [],
-        quotes: [
-          { text: "My idea of leisure has been so warped by productivity culture that I don't know what I actually enjoy anymore.", source: "r/ABCDesis", url: "https://www.reddit.com/r/ABCDesis" },
-          { text: "I have a list of hobbies I 'should' have. I don't actually know what I enjoy doing just for fun.", source: "r/ABCDesis", url: "https://www.reddit.com/r/ABCDesis" },
-        ]
-      },
-      friction:  {
-        inner: '"Rest feels lazy. Hobbies feel selfish. The phone feels neutral."',
-        context: "The friction gap is partly psychological: leisure itself carries stigma. The phone feels like a non-committal middle ground — neither work nor obviously 'wasted' time.",
-        pulls: ["Productivity guilt", "Cultural expectations of sacrifice", "Rest = laziness framing", "Unclear what 'allowed' leisure even looks like"],
-        quotes: [
-          { text: "In my household growing up, free time was suspicious. 'Why aren't you studying?' I internalized that completely.", source: "r/ABCDesis", url: "https://www.reddit.com/r/ABCDesis" },
-          { text: "Scrolling doesn't feel as bad as 'doing nothing'. So I scroll. It at least feels like I'm consuming information.", source: "r/ABCDesis", url: "https://www.reddit.com/r/ABCDesis" },
-          { text: "Free time, when it comes, is rare. It feels like I should use it productively, not just rest.", source: "r/ABCDesis", url: "https://www.reddit.com/r/ABCDesis" },
-        ]
-      },
-      pull:      {
-        inner: '"YouTube is work-adjacent enough to not feel guilty."',
-        context: "Passive leisure that feels informational (YouTube, podcasts, news) gets framed as acceptable. The phone becomes permission to rest without admitting to resting.",
-        pulls: ["'Productive scrolling' rationalisation", "Educational content as guilt bypass", "Phone as socially acceptable idle"],
-        quotes: [
-          { text: "I watch documentaries and 'learn things' so I don't feel like I'm wasting time. I am absolutely wasting time.", source: "r/ABCDesis", url: "https://www.reddit.com/r/ABCDesis" },
-          { text: "My parents rested by being around community. I rest by watching people on screens. It's not the same.", source: "r/ABCDesis", url: "https://www.reddit.com/r/ABCDesis" },
-        ]
-      },
-      default:   {
-        inner: '"Three hours of YouTube. I learned nothing useful."',
-        context: "The productive-leisure rationalisation collapses. The evening ends in the same passive default as everyone else — but with an added layer of cultural guilt.",
-        pulls: ["Double guilt: wasted time AND not productive"],
-        quotes: [
-          { text: "I wasted my free time AND failed to be productive. Both. At once. The worst combination.", source: "r/ABCDesis", url: "https://www.reddit.com/r/ABCDesis" },
-          { text: "I don't have a leisure problem. I have a permission problem. I've never really given myself permission to just enjoy something.", source: "r/ABCDesis", url: "https://www.reddit.com/r/ABCDesis" },
-        ]
-      },
-      aftermath: {
-        inner: '"I feel guilty about resting badly when I could have rested properly."',
-        context: "The guilt loop is doubled: guilt about not being productive, AND guilt about not using the rest well. Neither lane feels legitimate.",
-        pulls: ["No legitimate rest lane", "Work guilt + leisure guilt simultaneously"],
-        quotes: [
-          { text: "The therapy revelation was: I had never given myself permission to do nothing. Not even once. No wonder I always felt exhausted.", source: "r/ABCDesis", url: "https://www.reddit.com/r/ABCDesis" },
-          { text: "My parents came here and worked so hard. And I can't even figure out how to enjoy a Sunday afternoon. That's its own kind of failure.", source: "r/ABCDesis", url: "https://www.reddit.com/r/ABCDesis" },
-        ]
-      },
+  diaspora:{
+    id:'diaspora',label:'South Asian diaspora',emoji:'🌏',color:VS.clay,
+    description:'Second-generation immigrant navigating cultural pressure around productivity and rest.',
+    source:'r/ABCDesis · Pew Research Religion 2019',
+    arcY:[0.12,0.18,0.55,0.65,0.78,0.92],
+    stages:{
+      opening:{inner:'"Free time. But should I be doing something productive?"',context:'Rest carries cultural weight. Leisure can feel like evidence of insufficient ambition — especially for second-generation immigrants shaped by sacrificial parental narratives.',pulls:[],
+        quotes:[
+          {text:'I feel guilty resting. Like there\'s always something I should be doing. My parents didn\'t come here so I could watch TV.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+          {text:'Free time doesn\'t feel free. It feels like time I\'m supposed to justify.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+        ]},
+      intention:{inner:'"I could call home, work on something, or... actually relax?"',context:'Leisure competes with obligation. "Productive rest" feels more legitimate than chosen enjoyment.',pulls:[],
+        quotes:[
+          {text:'My idea of leisure has been so warped by productivity culture that I don\'t know what I actually enjoy anymore.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+          {text:'I have a list of hobbies I "should" have. I don\'t actually know what I enjoy doing just for fun.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+        ]},
+      friction:{inner:'"Rest feels lazy. Hobbies feel selfish. The phone feels neutral."',context:'Leisure itself carries stigma. The phone feels like a non-committal middle ground — neither work nor obviously "wasted" time.',pulls:['Productivity guilt','Cultural expectations of sacrifice','Rest = laziness framing','Unclear what "allowed" leisure looks like'],
+        quotes:[
+          {text:'In my household growing up, free time was suspicious. "Why aren\'t you studying?" I internalized that completely.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+          {text:'Scrolling doesn\'t feel as bad as "doing nothing." So I scroll. It at least feels like I\'m consuming information.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+          {text:'Free time, when it comes, is rare. It feels like I should use it productively, not just rest.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+        ]},
+      pull:{inner:'"YouTube is work-adjacent enough to not feel guilty."',context:'Passive leisure framed as informational (YouTube, podcasts, news) feels acceptable. The phone becomes permission to rest without admitting to resting.',pulls:['"Productive scrolling" rationalisation','Educational content as guilt bypass'],
+        quotes:[
+          {text:'I watch documentaries and "learn things" so I don\'t feel like I\'m wasting time. I am absolutely wasting time.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+          {text:'My parents rested by being around community. I rest by watching people on screens. It\'s not the same.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+        ]},
+      default:{inner:'"Three hours of YouTube. I learned nothing useful."',context:'The productive-leisure rationalisation collapses. The evening ends in the same passive default — but with added cultural guilt.',pulls:['Double guilt: wasted time AND not productive'],
+        quotes:[
+          {text:'I wasted my free time AND failed to be productive. Both. At once.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+          {text:'I don\'t have a leisure problem. I have a permission problem. I\'ve never really given myself permission to just enjoy something.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+        ]},
+      aftermath:{inner:'"I feel guilty about resting badly when I could have rested properly."',context:'Double guilt: failed to be productive AND failed to rest well. Neither lane feels legitimate.',pulls:['No legitimate rest lane','Work guilt + leisure guilt simultaneously'],
+        quotes:[
+          {text:'The therapy revelation was: I had never given myself permission to do nothing. Not even once.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+        ]},
+    }
+  },
+  sabbath:{
+    id:'sabbath',label:'Shabbat / Jumu\'ah observer',emoji:'✦',color:'#B08A2E',  // warm gold
+    description:'Weekly structured rest — Shabbat (Jewish), Jumu\'ah (Muslim), or Sunday observance. Rest is institutionally protected.',
+    source:'Pew Research Religion & Wellbeing 2019 · My Jewish Learning · Psychology Today 2013 · r/Judaism',
+    arcY:[0.15,0.22,0.25,0.22,0.18,0.14],
+    stages:{
+      opening:{inner:'"Shabbat begins. The phone goes away."',context:'For observant Jews, Shabbat begins Friday at sundown and lasts 25 hours. Technology is not permitted. The question of what to do is already answered structurally.',pulls:[],
+        quotes:[
+          {text:'Shabbat is the practice of stopping. Not because you\'ve finished — but because stopping itself has value.',source:'My Jewish Learning',url:'https://www.myjewishlearning.com/article/shabbat-101/'},
+          {text:'The moment Shabbat starts, the week is over. There\'s nothing to do. That sounds like nothing, but it\'s everything.',source:'r/Judaism',url:'https://www.reddit.com/r/Judaism'},
+        ]},
+      intention:{inner:'"Tonight: dinner with family, talking, maybe a walk."',context:'Intention is supported by ritual, not fighting against inertia. The activities are pre-decided by cultural practice.',pulls:[],
+        quotes:[
+          {text:'I don\'t have to decide what to do on Shabbat. It\'s decided. That\'s the gift.',source:'r/Judaism',url:'https://www.reddit.com/r/Judaism'},
+          {text:'We light candles, we eat, we talk. No one is checking their phone. It\'s the most present I feel all week.',source:'r/Judaism',url:'https://www.reddit.com/r/Judaism'},
+        ]},
+      friction:{inner:'"I notice the pull to check — but the structure holds."',context:'The friction gap still exists psychologically, but it\'s pre-resolved by communal practice. The rule is external, not requiring daily willpower.',pulls:['FOMO about being offline','Social media withdrawal — initial'],
+        quotes:[
+          {text:'The first hour of Shabbat I always feel the pull to check my phone. Then it passes. Then I can\'t believe I ever thought that was relaxing.',source:'r/Judaism',url:'https://www.reddit.com/r/Judaism'},
+          {text:'Shabbat observers report significantly lower anxiety and higher life satisfaction than non-observers in the same community.',source:'Psychology Today — The Gift of Shabbat, 2013',url:'https://www.psychologytoday.com/us/blog/spiritual-wisdom-secular-times/201303/the-gift-of-shabbat'},
+        ]},
+      pull:{inner:'"No phone, so... I talk to people."',context:'Without the phone as default, the next easiest thing becomes social. The "default" is community, not content.',pulls:[],
+        quotes:[
+          {text:'The thing about no phone on Shabbat is that you realize how often you reach for it — and then you find something else to do.',source:'r/Judaism',url:'https://www.reddit.com/r/Judaism'},
+          {text:'Jumu\'ah pulls the community together in a way that resets the week. The afternoon is for rest and family.',source:'r/islam',url:'https://www.reddit.com/r/islam'},
+        ]},
+      default:{inner:'"We talked for hours. I forgot time."',context:'Active leisure becomes the default when passive defaults are removed. Conversation, walking, reading fill the evening.',pulls:[],
+        quotes:[
+          {text:'Last Shabbat we talked for three hours at the table. I didn\'t notice time passing. That never happens with my phone.',source:'r/Judaism',url:'https://www.reddit.com/r/Judaism'},
+          {text:'The Shabbat version of me has better evenings than the weekday version. Every week I think I should import some of that.',source:'r/Judaism',url:'https://www.reddit.com/r/Judaism'},
+        ]},
+      aftermath:{inner:'"I feel rested. Actually rested."',context:'When rest is structurally protected, the aftermath is restoration — not guilt. The loop closes on fullness, not emptiness.',pulls:[],
+        quotes:[
+          {text:'Havdalah ends Shabbat. There\'s a ritual for that too — to mark the transition. Even ending rest is intentional.',source:'r/Judaism',url:'https://www.reddit.com/r/Judaism'},
+          {text:'I come back from Shabbat feeling like I actually had a weekend. Most of my non-religious friends feel like they didn\'t.',source:'r/Judaism',url:'https://www.reddit.com/r/Judaism'},
+        ]},
     }
   },
 };
 
+// ── EXPANDED IDENTITIES (matching Data1 groupings) ──
+Object.assign(IDENTITIES, {
+  retired:{
+    id:'retired',label:'Retired 65+',emoji:'🕊',color:'#7B4FA6',
+    description:'Post-career. Most free time of any group, but structure is gone.',
+    source:'BLS ATUS 2024 (6.22–7.28h/day leisure)',
+    arcY:[0.10,0.15,0.38,0.55,0.70,0.80],
+    stages:{
+      opening:{inner:'"Another day. What should I do with it?"',context:'6+ hours of free time daily — but without the social scaffolding that work provided, the question "what now?" is harder than ever.',pulls:[],
+        quotes:[
+          {text:'Retirement gave me time but took away the structure. I had more hours than I ever had — and less idea what to do with them.',source:'r/Retirement',url:'https://www.reddit.com/r/Retirement'},
+          {text:'People underestimate how much of their identity and social life was tied to work. When that goes, leisure feels directionless.',source:'r/Retirement',url:'https://www.reddit.com/r/Retirement'},
+        ]},
+      intention:{inner:'"I should take up a hobby. Finally travel. Learn something."',context:'The intention window is wide open — there is time. But without deadline, pressure, or social pull, intention stays intention.',pulls:[],
+        quotes:[
+          {text:'I told myself retirement was when I\'d finally do all the things I never had time for. That was three years ago.',source:'r/Retirement',url:'https://www.reddit.com/r/Retirement'},
+        ]},
+      friction:{inner:'"But I\'d have to drive there. And I don\'t know anyone in that class."',context:'Mobility, social isolation, and unfamiliarity with new leisure contexts replace cognitive depletion as the primary friction.',pulls:['Social isolation','Mobility limits','Unfamiliar leisure contexts','No peer group to pull you along'],
+        quotes:[
+          {text:'Most of my friends just watch TV. I understand it — we\'re tired, we\'re alone sometimes. But there has to be more.',source:'r/Retirement',url:'https://www.reddit.com/r/Retirement'},
+        ]},
+      pull:{inner:'"The TV is already on."',context:'TV becomes a constant companion, filling silence and providing passive social contact (news anchors, characters). 4.39h/day for 75+.',pulls:['TV as social proxy','No activation energy required','Habit accumulated over decades'],
+        quotes:[
+          {text:'It\'s not that I love TV. It\'s that it\'s there, and it talks to me, and it doesn\'t require anything of me.',source:'r/Retirement',url:'https://www.reddit.com/r/Retirement'},
+          {text:'75+ adults average 4.39 hours of TV per day — the highest of any age group.',source:'BLS ATUS 2024',url:'https://www.bls.gov/news.release/atus.t11b.htm'},
+        ]},
+      default:{inner:'"It\'s been another quiet day."',context:'The day ends in a passive default. The leisure gap is structural — social infrastructure, not willpower.',pulls:['Social infrastructure gap','Mobility constraints'],
+        quotes:[
+          {text:'I have more free time than I\'ve ever had in my life. I spend most of it watching things I won\'t remember by morning.',source:'r/Retirement',url:'https://www.reddit.com/r/Retirement'},
+        ]},
+      aftermath:{inner:'"Is this what I worked for?"',context:'A slower, quieter guilt — not about tonight, but about the shape of the days.',pulls:['Meaning deficit','Sense of unlived potential'],
+        quotes:[
+          {text:'I keep thinking there should be more to this. But I don\'t know how to find it alone.',source:'r/Retirement',url:'https://www.reddit.com/r/Retirement'},
+        ]},
+    }
+  },
+  japan:{
+    id:'japan',label:'Overworked / East Asian',emoji:'⏱',color:'#C97B55',
+    description:'High-pressure work culture (Japan, S. Korea, finance/tech). Leisure compressed and guilt-laden.',
+    source:'Japan Statistics Bureau 2021 · r/japanlife · Wikipedia Karoshi · OECD',
+    arcY:[0.08,0.14,0.70,0.80,0.88,0.95],
+    stages:{
+      opening:{inner:'"I have an hour before I should prep for tomorrow."',context:'Japan averages 215 minutes of leisure/day — one of the lowest in OECD. Free time is a compressed margin.',pulls:[],
+        quotes:[
+          {text:'疲れすぎて、何もできない。(Too exhausted to do anything.)',source:'r/japanlife',url:'https://www.reddit.com/r/japanlife'},
+          {text:'Japan\'s average leisure time is 3h 35min/day — compared to Norway\'s 6h 9min.',source:'OECD Time Use Database',url:'https://stats.oecd.org/index.aspx?queryid=54757'},
+        ]},
+      intention:{inner:'"Maybe I can finally read that book I bought three months ago."',context:'Intention exists but is tinged with the knowledge that rest has been postponed for weeks.',pulls:[],
+        quotes:[
+          {text:'I bought a guitar two years ago. It\'s still in the corner of my room.',source:'r/japanlife',url:'https://www.reddit.com/r/japanlife'},
+        ]},
+      friction:{inner:'"It\'s already 10pm. Why start something now."',context:'Chronic overwork depletes motivation structurally. The feeling isn\'t "I don\'t want to" — it\'s "I can\'t begin."',pulls:['Chronic exhaustion','Work guilt','Time too short to feel worthwhile','Cultural pressure to be productive'],
+        quotes:[
+          {text:'I come home at 10pm. I eat. I sit. I sleep.',source:'r/japanlife',url:'https://www.reddit.com/r/japanlife'},
+          {text:'I don\'t even have the energy to decide what I want to do. That decision alone is exhausting.',source:'r/korea (translated)',url:'https://www.reddit.com/r/korea'},
+        ]},
+      pull:{inner:'"YouTube is already open."',context:'After 12 hours of work requiring constant performance, zero activation energy is all that\'s available.',pulls:['Phone as only private space','No social coordination required'],
+        quotes:[
+          {text:'My phone is the only thing in my day that doesn\'t judge me.',source:'r/japanlife',url:'https://www.reddit.com/r/japanlife'},
+        ]},
+      default:{inner:'"Another night gone."',context:'The compressed evening disappears entirely. Sleep delayed, deepening tomorrow\'s depletion.',pulls:['Sleep debt','No recovery between cycles'],
+        quotes:[
+          {text:'I watch YouTube until 1am not because I\'m enjoying it but because it\'s the only way to stop thinking about work.',source:'r/japanlife',url:'https://www.reddit.com/r/japanlife'},
+        ]},
+      aftermath:{inner:'"I should rest properly. Tomorrow."',context:'Rest is perpetually deferred. "Tomorrow" never comes because the structural conditions don\'t change.',pulls:['Structural deferral','Cultural permission deficit'],
+        quotes:[
+          {text:'Vacation guilt is real in Japan. Even when I\'m off I feel like I should be doing something.',source:'r/japanlife',url:'https://www.reddit.com/r/japanlife'},
+        ]},
+    }
+  },
+  lowwage:{
+    id:'lowwage',label:'Low-income / precarious',emoji:'💰',color:'#7B68C8',
+    description:'Multiple jobs or low-wage employment. Leisure constrained by time and cost.',
+    source:'BLS ATUS 2024 · r/povertyfinance · Pew Research 2024',
+    arcY:[0.10,0.18,0.55,0.68,0.80,0.90],
+    stages:{
+      opening:{inner:'"Finally off. But I\'m already thinking about the next shift."',context:'Free time arrives shadowed by financial stress, schedule uncertainty, and physical fatigue.',pulls:[],
+        quotes:[
+          {text:'I work two jobs. When I have free time I\'m either too tired or too anxious about money to enjoy it.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+        ]},
+      intention:{inner:'"I want to do something. But what doesn\'t cost money?"',context:'Intention is filtered through cost. Most meaningful leisure activities have a barrier.',pulls:[],
+        quotes:[
+          {text:'What am I going to do — go to a concert? I can\'t afford that. So yeah, I\'m on my phone.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+        ]},
+      friction:{inner:'"I\'m tired, and everything I want to do costs money or is too far."',context:'Friction compounded by cost and access. Public leisure infrastructure has eroded in many low-income areas.',pulls:['Cost barrier','Transport access','No nearby public leisure space','Physical fatigue'],
+        quotes:[
+          {text:'The library is free but I need a way to get there. The park is free but I need energy.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+          {text:'People act like free time is the only barrier. Money is the barrier. Energy is the barrier. Safety is the barrier.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+        ]},
+      pull:{inner:'"The phone is free. It\'s already paid for."',context:'The smartphone becomes the universal leisure equaliser — the one option with no incremental cost.',pulls:['Zero marginal cost','Always available'],
+        quotes:[
+          {text:'My phone is the cheapest entertainment I have. Everything else costs extra.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+        ]},
+      default:{inner:'"At least this doesn\'t cost anything."',context:'Passive leisure fills the evening not as first choice but as the only accessible one.',pulls:['Default is only affordable option'],
+        quotes:[
+          {text:'People without a high school diploma average 2.82 hours of TV on weekdays — more than any other group.',source:'BLS ATUS 2024',url:'https://www.bls.gov/news.release/atus.t11b.htm'},
+        ]},
+      aftermath:{inner:'"Another night watching stuff I don\'t even like."',context:'Guilt carries a particular weight: the sense that options are determined by income, not choice.',pulls:['Structural leisure inequality'],
+        quotes:[
+          {text:'I feel guilty. But the things I\'d rather do — I genuinely can\'t afford them.',source:'r/povertyfinance',url:'https://www.reddit.com/r/povertyfinance'},
+        ]},
+    }
+  },
+  diaspora:{
+    id:'diaspora',label:'South Asian diaspora',emoji:'🌏',color:'#A85C3A',
+    description:'Second-generation immigrant navigating cultural pressure around productivity and rest.',
+    source:'r/ABCDesis · Pew Research Religion 2019',
+    arcY:[0.12,0.18,0.55,0.65,0.78,0.92],
+    stages:{
+      opening:{inner:'"Free time. But should I be doing something productive?"',context:'Rest carries cultural weight. Leisure can feel like evidence of insufficient ambition.',pulls:[],
+        quotes:[
+          {text:'I feel guilty resting. My parents didn\'t come here so I could watch TV.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+        ]},
+      intention:{inner:'"I could call home, work on something, or... actually relax?"',context:'Leisure competes with obligation. "Productive rest" feels more legitimate than chosen enjoyment.',pulls:[],
+        quotes:[
+          {text:'I don\'t know what I actually enjoy doing just for fun. That\'s a weird thing to realize.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+        ]},
+      friction:{inner:'"Rest feels lazy. Hobbies feel selfish. The phone feels neutral."',context:'Leisure carries stigma. The phone feels like a non-committal middle ground.',pulls:['Productivity guilt','Cultural expectations of sacrifice','Rest = laziness framing'],
+        quotes:[
+          {text:'In my household growing up, free time was suspicious. "Why aren\'t you studying?" I internalized that.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+          {text:'Free time feels like time I should be using productively, not just resting.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+        ]},
+      pull:{inner:'"YouTube is work-adjacent enough to not feel guilty."',context:'Passive leisure framed as informational feels acceptable — permission to rest without admitting to resting.',pulls:['"Productive scrolling" rationalisation'],
+        quotes:[
+          {text:'I watch documentaries so I don\'t feel like I\'m wasting time. I am absolutely wasting time.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+        ]},
+      default:{inner:'"Three hours of YouTube. I learned nothing."',context:'The productive-leisure rationalisation collapses. Same passive default — but with added cultural guilt.',pulls:['Double guilt: wasted time AND not productive'],
+        quotes:[
+          {text:'I don\'t have a leisure problem. I have a permission problem.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+        ]},
+      aftermath:{inner:'"Guilty about resting badly when I could have rested properly."',context:'Neither productive nor rested. No legitimate lane.',pulls:['No valid rest lane','Work guilt + leisure guilt simultaneously'],
+        quotes:[
+          {text:'The therapy revelation: I had never given myself permission to do nothing. Not even once.',source:'r/ABCDesis',url:'https://www.reddit.com/r/ABCDesis'},
+        ]},
+    }
+  },
+  nigeria:{
+    id:'nigeria',label:'Community-first leisure (Nigeria)',emoji:'🤝',color:'#4E8B5F',
+    description:'Mobile-first economy where social and community leisure is the default, not the exception.',
+    source:'GSMA Mobile Economy 2024 · DataReportal 2024',
+    arcY:[0.15,0.20,0.22,0.20,0.17,0.14],
+    stages:{
+      opening:{inner:'"Evening. Where\'s everyone gathering tonight?"',context:'Free time is socially embedded — the default activity is already decided by who\'s around and where the community is.',pulls:[],
+        quotes:[
+          {text:'In Nigeria, your phone is your computer, TV, radio, and community board — but going out is still the first choice.',source:'GSMA qualitative research 2024',url:'https://www.gsma.com/mobileeconomy/'},
+        ]},
+      intention:{inner:'"Let\'s go to the junction. Or the church courtyard."',context:'Social default means intention is collective, not individual. The activation question is "with who?" not "what to do?"',pulls:[],
+        quotes:[
+          {text:'Community leisure doesn\'t need activation energy the same way — you\'re pulled in by the group.',source:'Research synthesis',url:'https://www.gsma.com/mobileeconomy/'},
+        ]},
+      friction:{inner:'"The rain is coming. Or I\'m low on data to find everyone."',context:'Friction is logistical (weather, transport, data cost) not cognitive. The desire for social leisure is already there.',pulls:['Unreliable infrastructure','Data costs','Transport'],
+        quotes:[
+          {text:'Mobile-first internet: many accessing the web for the first time via smartphone. Social leisure still dominant over digital.',source:'GSMA Mobile Economy 2024',url:'https://www.gsma.com/mobileeconomy/'},
+        ]},
+      pull:{inner:'"Let me check if anyone\'s replied to the group chat."',context:'The phone enters as a social coordination tool — and can slide into passive consumption, but the impulse is social first.',pulls:['Group chats blur social/passive','Data-priced access'],
+        quotes:[
+          {text:'We\'re at an inflection point. The same platforms that shaped Western defaults are arriving here now.',source:'DataReportal 2024',url:'https://datareportal.com/reports/digital-2024-global-overview-report'},
+        ]},
+      default:{inner:'"Good evening out. Or a decent phone evening."',context:'Either outcome is more social than the Western equivalent. The drift toward passive digital is beginning but not yet dominant.',pulls:['Digital defaults expanding'],
+        quotes:[
+          {text:'The window to build different leisure infrastructure before Western defaults take hold is now.',source:'GSMA 2024',url:'https://www.gsma.com/mobileeconomy/'},
+        ]},
+      aftermath:{inner:'"That was a good evening."',context:'The aftermath is rest — not guilt. When community is the default, the loop closes on connection.',pulls:[],
+        quotes:[
+          {text:'Sub-Saharan Africa mobile-first internet. Leisure is social/community-based — less passive digital than any other region.',source:'GSMA Mobile Economy 2024',url:'https://www.gsma.com/mobileeconomy/'},
+        ]},
+    }
+  },
+});
+
 const IDENTITY_LIST = Object.values(IDENTITIES);
 
-// ══════════════════════════════════════════════════════════
-// JOURNEY ARC SVG — multi-identity overlay
-// ══════════════════════════════════════════════════════════
-function JourneyArc({ selectedIds, activeStage, onStageClick, width, height }) {
-  const pad = { left:80, right:80, top:30, bottom:50 };
-  const innerW = width - pad.left - pad.right;
-  const innerH = height - pad.top - pad.bottom;
-  const n = STAGE_LABELS.length;
+const systemForces = [
+  {label:'Labour schedules',icon:'⏱',desc:'Shift patterns and long hours shrink available rest time.'},
+  {label:'App ecosystems',icon:'📱',desc:'Platforms engineered to capture attention before alternatives form.'},
+  {label:'Leisure infrastructure',icon:'🏚',desc:'Public spaces, libraries, community facilities have eroded.'},
+  {label:'Overwork norms',icon:'⚙️',desc:'Productivity is valorised; rest is treated as a reward, not a right.'},
+  {label:'Income & access',icon:'💰',desc:'Many enriching activities carry a cost that constrains choice.'},
+  {label:'Caregiving load',icon:'👶',desc:'Fragmented caregiving leaves only slivers of genuine free time.'},
+  {label:'Academic pressure',icon:'📚',desc:'Study guilt pervades student leisure — rest feels like avoidance.'},
+  {label:'Cultural guilt',icon:'🌏',desc:'In some communities, leisure itself carries stigma as unproductive.'},
+];
 
-  function catmullRom(points) {
-    if (points.length < 2) return "";
-    let d = `M ${points[0].x} ${points[0].y}`;
-    for (let i = 0; i < points.length - 1; i++) {
-      const p0 = points[Math.max(i-1,0)];
-      const p1 = points[i];
-      const p2 = points[i+1];
-      const p3 = points[Math.min(i+2,points.length-1)];
-      const cp1x = p1.x + (p2.x-p0.x)/6;
-      const cp1y = p1.y + (p2.y-p0.y)/6;
-      const cp2x = p2.x - (p3.x-p1.x)/6;
-      const cp2y = p2.y - (p3.y-p1.y)/6;
-      d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
-    }
-    return d;
-  }
-
-  const xPos = (i) => pad.left + (i / (n-1)) * innerW;
-  const yPos = (arcY, i) => pad.top + arcY[i] * innerH;
-
-  return (
-    <svg width={width} height={height} style={{ display:"block" }}>
-      <defs>
-        {IDENTITY_LIST.map(id => (
-          <linearGradient key={id.id} id={`grad-${id.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={id.color} stopOpacity="0.4" />
-            <stop offset="100%" stopColor={id.color} stopOpacity="1" />
-          </linearGradient>
-        ))}
-      </defs>
-
-      {/* Grid */}
-      {[0.25,0.5,0.75].map(t => (
-        <line key={t}
-          x1={pad.left+t*innerW} y1={pad.top}
-          x2={pad.left+t*innerW} y2={pad.top+innerH}
-          stroke="#e0e4e8" strokeWidth="1" strokeDasharray="4,4" />
-      ))}
-      <text x={pad.left-10} y={pad.top+6} textAnchor="end" fontSize="10" fill="#bbb" fontFamily="system-ui">intentional</text>
-      <text x={pad.left-10} y={pad.top+innerH} textAnchor="end" fontSize="10" fill="#bbb" fontFamily="system-ui">defaulted</text>
-
-      {/* Arcs — unselected first (faint), selected on top */}
-      {IDENTITY_LIST.filter(id => !selectedIds.includes(id.id)).map(id => {
-        const pts = STAGE_LABELS.map((_,i) => ({ x:xPos(i), y:yPos(id.arcY,i) }));
-        return (
-          <path key={id.id} d={catmullRom(pts)}
-            fill="none" stroke={id.color} strokeWidth="1.5"
-            opacity="0.08" strokeLinejoin="round" strokeDasharray="5,4" />
-        );
-      })}
-      {IDENTITY_LIST.filter(id => selectedIds.includes(id.id)).map(id => {
-        const pts = STAGE_LABELS.map((_,i) => ({ x:xPos(i), y:yPos(id.arcY,i) }));
-        return (
-          <path key={id.id} d={catmullRom(pts)}
-            fill="none" stroke={`url(#grad-${id.id})`} strokeWidth="2.5"
-            opacity="0.85" strokeLinejoin="round" />
-        );
-      })}
-
-      {/* Stage nodes — per selected identity */}
-      {STAGE_LABELS.map((stage, si) => {
-        const isActive = activeStage === stage.id;
-        // Primary node position: use first selected identity, or default
-        const primaryId = selectedIds[0] ? IDENTITIES[selectedIds[0]] : IDENTITIES.default;
-        const nodeX = xPos(si);
-        const nodeY = yPos(primaryId.arcY, si);
-
-        // Small secondary dots for other selected identities
-        const others = selectedIds.slice(1).map(k => IDENTITIES[k]);
-
-        return (
-          <g key={stage.id} onClick={() => onStageClick(stage.id)} style={{ cursor:"pointer" }}>
-            {/* Secondary identity dots */}
-            {others.map((otherId, oi) => {
-              const oy = yPos(otherId.arcY, si);
-              return (
-                <circle key={otherId.id}
-                  cx={nodeX} cy={oy} r={isActive ? 8 : 6}
-                  fill={isActive ? otherId.color : "#fff"}
-                  stroke={otherId.color} strokeWidth={isActive ? 0 : 2}
-                  opacity="0.85"
-                  style={{ transition:"all .2s ease" }} />
-              );
-            })}
-            {/* Glow */}
-            {isActive && <circle cx={nodeX} cy={nodeY} r={30} fill={primaryId.color} opacity="0.10" />}
-            {/* Primary node */}
-            <circle cx={nodeX} cy={nodeY}
-              r={isActive ? 22 : 16}
-              fill={isActive ? primaryId.color : "#fff"}
-              stroke={primaryId.color} strokeWidth={isActive ? 0 : 2.5}
-              style={{ transition:"all .25s ease" }} />
-            <text x={nodeX} y={nodeY+5}
-              textAnchor="middle"
-              fontSize={isActive ? "13" : "11"}
-              fontWeight="700"
-              fill={isActive ? "#fff" : primaryId.color}
-              fontFamily="system-ui,sans-serif"
-              style={{ pointerEvents:"none", userSelect:"none" }}>
-              {si+1}
-            </text>
-            {/* Stage label below node */}
-            <text x={nodeX} y={nodeY+(isActive?22:16)+16}
-              textAnchor="middle" fontSize="10"
-              fill={isActive ? primaryId.color : "#999"}
-              fontWeight={isActive ? "600" : "400"}
-              fontFamily="system-ui,sans-serif"
-              style={{ pointerEvents:"none", userSelect:"none" }}>
-              {stage.label.length > 16 ? stage.label.slice(0,15)+"…" : stage.label}
-            </text>
-            {/* Emotion tag below label */}
-            <text x={nodeX} y={nodeY+(isActive?22:16)+28}
-              textAnchor="middle" fontSize="9"
-              fill={isActive ? stage.color+"aa" : "#bbb"}
-              fontFamily="system-ui,sans-serif"
-              style={{ pointerEvents:"none", userSelect:"none" }}>
-              {stage.emotion}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
-
-// ══════════════════════════════════════════════════════════
-// QUOTE BLOCK — primary quote + expandable drawer
-// ══════════════════════════════════════════════════════════
-function QuoteBlock({ quotes, color }) {
-  const [expanded, setExpanded] = useState(false);
-  if (!quotes || quotes.length === 0) return null;
-  const primary = quotes[0];
-  const extra = quotes.slice(1);
-  return (
-    <div style={{ marginBottom:20 }}>
-      {/* Primary quote */}
+// ── QUOTE BLOCK ──
+function QuoteBlock({quotes,color}){
+  const [expanded,setExpanded]=useState(false);
+  if(!quotes||!quotes.length) return null;
+  const primary=quotes[0], extra=quotes.slice(1);
+  return(
+    <div style={{marginBottom:18}}>
       <div style={{
-        fontSize:16, fontStyle:"italic", color:"#2a2a2a",
-        padding:"14px 18px", background:`${color}10`,
-        borderLeft:`4px solid ${color}`, borderRadius:"0 10px 10px 0",
-        lineHeight:1.65, marginBottom:8,
+        fontSize:15,fontStyle:'italic',color:VS.ink,
+        padding:'14px 18px',background:`${color}10`,
+        borderLeft:`4px solid ${color}`,borderRadius:'0 12px 12px 0',
+        lineHeight:1.7,marginBottom:6,fontFamily:"'Lora','Georgia',serif",
       }}>
         {primary.text}
-        <div style={{ marginTop:8, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        <div style={{marginTop:8,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
           <a href={primary.url} target="_blank" rel="noopener noreferrer"
-            style={{ fontSize:11, color:color, fontStyle:"normal", fontFamily:"system-ui,sans-serif", textDecoration:"none", opacity:.8 }}>
+            style={{fontSize:11,color:color,fontStyle:'normal',fontFamily:"'Inter',sans-serif",textDecoration:'none',opacity:.8}}>
             — {primary.source} ↗
           </a>
-          {extra.length > 0 && (
-            <button onClick={() => setExpanded(!expanded)}
-              style={{
-                fontSize:11, color:color, background:"transparent", border:`1px solid ${color}40`,
-                borderRadius:12, padding:"3px 10px", cursor:"pointer",
-                fontFamily:"system-ui,sans-serif", letterSpacing:.3,
-              }}>
-              {expanded ? "Fewer quotes" : `+${extra.length} more quote${extra.length>1?'s':''}`}
+          {extra.length>0&&(
+            <button onClick={()=>setExpanded(!expanded)}
+              style={{fontSize:11,color:color,background:'transparent',border:`1px solid ${color}40`,
+                borderRadius:12,padding:'3px 10px',cursor:'pointer',fontFamily:"'Inter',sans-serif"}}>
+              {expanded?'Fewer quotes':`+${extra.length} more quote${extra.length>1?'s':''}`}
             </button>
           )}
         </div>
       </div>
-      {/* Drawer */}
-      {expanded && (
-        <div className="quote-drawer" style={{ display:"flex", flexDirection:"column", gap:8 }}>
-          {extra.map((q,i) => (
+      {expanded&&(
+        <div className="quote-drawer" style={{display:'flex',flexDirection:'column',gap:8}}>
+          {extra.map((q,i)=>(
             <div key={i} style={{
-              fontSize:14, fontStyle:"italic", color:"#444",
-              padding:"12px 16px", background:`${color}07`,
-              borderLeft:`2px solid ${color}50`, borderRadius:"0 8px 8px 0", lineHeight:1.65,
+              fontSize:14,fontStyle:'italic',color:VS.slate,
+              padding:'12px 16px',background:`${color}07`,
+              borderLeft:`2px solid ${color}50`,borderRadius:'0 8px 8px 0',lineHeight:1.65,
+              fontFamily:"'Lora','Georgia',serif",
             }}>
               {q.text}
-              <div style={{ marginTop:6 }}>
+              <div style={{marginTop:6}}>
                 <a href={q.url} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize:10, color:color, fontStyle:"normal", fontFamily:"system-ui,sans-serif", textDecoration:"none", opacity:.7 }}>
+                  style={{fontSize:10,color:color,fontStyle:'normal',fontFamily:"'Inter',sans-serif",textDecoration:'none',opacity:.7}}>
                   — {q.source} ↗
                 </a>
               </div>
@@ -634,105 +563,177 @@ function QuoteBlock({ quotes, color }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════
-// DETAIL PANEL — shows stage info for all selected identities
-// ══════════════════════════════════════════════════════════
-function DetailPanel({ selectedIds, activeStage }) {
-  if (!activeStage) {
-    return (
-      <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center",
-        justifyContent:"center", color:"#bbb", fontFamily:"system-ui,sans-serif",
-        padding:48, gap:12, textAlign:"center" }}>
-        <div style={{ fontSize:36 }}>↑</div>
-        <div style={{ fontSize:14 }}>Select a stage on the journey arc above</div>
-        <div style={{ fontSize:12, color:"#ccc", maxWidth:360 }}>
-          Each stage shows how different people experience the same moment differently
-        </div>
-      </div>
-    );
+// ── JOURNEY ARC ──
+function JourneyArc({selectedIds,activeStage,onStageClick,width,height}){
+  const pad={left:80,right:80,top:32,bottom:52};
+  const innerW=width-pad.left-pad.right, innerH=height-pad.top-pad.bottom;
+  const n=STAGE_LABELS.length;
+
+  function catmullRom(pts){
+    if(pts.length<2) return '';
+    let d=`M ${pts[0].x} ${pts[0].y}`;
+    for(let i=0;i<pts.length-1;i++){
+      const p0=pts[Math.max(i-1,0)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(i+2,pts.length-1)];
+      const cp1x=p1.x+(p2.x-p0.x)/6,cp1y=p1.y+(p2.y-p0.y)/6;
+      const cp2x=p2.x-(p3.x-p1.x)/6,cp2y=p2.y-(p3.y-p1.y)/6;
+      d+=` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+    }
+    return d;
   }
 
-  const stageInfo = STAGE_LABELS.find(s => s.id === activeStage);
-  const activeIds = selectedIds.length > 0 ? selectedIds : ["default"];
+  const xPos=(i)=>pad.left+(i/(n-1))*innerW;
+  const yPos=(arcY,i)=>pad.top+arcY[i]*innerH;
 
-  return (
-    <div key={activeStage} style={{
-      flex:1, padding:"28px 40px", animation:"fadeIn .3s ease", overflowY:"auto",
-    }}>
-      {/* Stage header — consistent taxonomy label */}
-      <div style={{ marginBottom:20, paddingBottom:16, borderBottom:"1px solid #eee" }}>
-        <div style={{ fontSize:10, letterSpacing:2, textTransform:"uppercase",
-          color:"#bbb", fontFamily:"system-ui,sans-serif", marginBottom:6 }}>
+  return(
+    <svg width={width} height={height} style={{display:'block'}}>
+      <defs>
+        {IDENTITY_LIST.map(id=>(
+          <linearGradient key={id.id} id={`grad-${id.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={id.color} stopOpacity="0.3"/>
+            <stop offset="100%" stopColor={id.color} stopOpacity="1"/>
+          </linearGradient>
+        ))}
+      </defs>
+
+      {/* Soft arc background motif */}
+      <path d={`M ${pad.left} ${pad.top+innerH*0.5} Q ${pad.left+innerW*0.5} ${pad.top-20} ${pad.left+innerW} ${pad.top+innerH*0.5}`}
+        fill="none" stroke={VS.sand} strokeWidth="1" opacity="0.5"/>
+
+      {/* Grid */}
+      {[0.25,0.5,0.75].map(t=>(
+        <line key={t} x1={pad.left+t*innerW} y1={pad.top} x2={pad.left+t*innerW} y2={pad.top+innerH}
+          stroke={VS.sand} strokeWidth="1" strokeDasharray="4,4"/>
+      ))}
+      <text x={pad.left-10} y={pad.top+6} textAnchor="end" fontSize="9" fill={VS.sage} fontFamily="Inter,sans-serif">intentional</text>
+      <text x={pad.left-10} y={pad.top+innerH} textAnchor="end" fontSize="9" fill={VS.terracotta} fontFamily="Inter,sans-serif">defaulted</text>
+
+      {/* Faint ghost arcs for unselected */}
+      {IDENTITY_LIST.filter(id=>!selectedIds.includes(id.id)).map(id=>{
+        const pts=STAGE_LABELS.map((_,i)=>({x:xPos(i),y:yPos(id.arcY,i)}));
+        return(<path key={id.id} d={catmullRom(pts)} fill="none" stroke={id.color} strokeWidth="1" opacity="0.07" strokeDasharray="4,3"/>);
+      })}
+      {/* Selected arcs */}
+      {IDENTITY_LIST.filter(id=>selectedIds.includes(id.id)).map(id=>{
+        const pts=STAGE_LABELS.map((_,i)=>({x:xPos(i),y:yPos(id.arcY,i)}));
+        return(<path key={id.id} d={catmullRom(pts)} fill="none" stroke={`url(#grad-${id.id})`} strokeWidth="2.5" opacity="0.9"/>);
+      })}
+
+      {/* Nodes */}
+      {STAGE_LABELS.map((stage,si)=>{
+        const isActive=activeStage===stage.id;
+        const primaryId=selectedIds[0]?IDENTITIES[selectedIds[0]]:IDENTITIES.default;
+        const nodeX=xPos(si), nodeY=yPos(primaryId.arcY,si);
+        const others=selectedIds.slice(1).map(k=>IDENTITIES[k]);
+        return(
+          <g key={stage.id} onClick={()=>onStageClick(stage.id)} style={{cursor:'pointer'}}>
+            {others.map((oid)=>{
+              const oy=yPos(oid.arcY,si);
+              return(<circle key={oid.id} cx={nodeX} cy={oy} r={isActive?8:5}
+                fill={isActive?oid.color:'#fff'} stroke={oid.color} strokeWidth={isActive?0:2}
+                opacity="0.9" style={{transition:'all .2s ease'}}/>);
+            })}
+            {isActive&&<circle cx={nodeX} cy={nodeY} r={32} fill={primaryId.color} opacity="0.08"/>}
+            {/* Node circle — solid fill always so it never disappears into background */}
+            <circle cx={nodeX} cy={nodeY} r={isActive?22:17}
+              fill={isActive ? primaryId.color : VS.slate}
+              stroke={isActive ? primaryId.color : 'none'}
+              strokeWidth={0}
+              style={{transition:'all .25s ease',
+                filter:isActive?`drop-shadow(0 3px 10px ${primaryId.color}66)`:`drop-shadow(0 2px 6px rgba(30,45,58,0.35))`
+              }}/>
+            {/* Hover ring */}
+            {!isActive && (
+              <circle cx={nodeX} cy={nodeY} r={22}
+                fill="none" stroke={primaryId.color} strokeWidth="1.5" opacity="0.35"
+                strokeDasharray="3,2"/>
+            )}
+            <text x={nodeX} y={nodeY+5} textAnchor="middle"
+              fontSize={isActive?'13':'11'} fontWeight="700"
+              fill="#fff"
+              fontFamily="Inter,sans-serif" style={{pointerEvents:'none',userSelect:'none'}}>
+              {si+1}
+            </text>
+            <text x={nodeX} y={nodeY+(isActive?22:17)+15} textAnchor="middle" fontSize="10"
+              fill={isActive ? primaryId.color : VS.ink} fontWeight={isActive?'700':'600'}
+              fontFamily="Inter,sans-serif" style={{pointerEvents:'none',userSelect:'none'}}>
+              {stage.label.length>16?stage.label.slice(0,15)+'…':stage.label}
+            </text>
+            <text x={nodeX} y={nodeY+(isActive?22:17)+27} textAnchor="middle" fontSize="9"
+              fill={isActive ? stage.color : VS.terracotta} fontFamily="Inter,sans-serif"
+              style={{pointerEvents:'none',userSelect:'none'}}>
+              {stage.emotion}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ── DETAIL PANEL ──
+function DetailPanel({selectedIds,activeStage}){
+  if(!activeStage) return(
+    <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',
+      justifyContent:'center',padding:48,gap:12,textAlign:'center'}}>
+      {/* Nested circle motif */}
+      <svg width="60" height="60"><circle cx="30" cy="30" r="22" fill="none" stroke={VS.sand} strokeWidth="1.5" strokeDasharray="4,3"/>
+        <circle cx="30" cy="30" r="12" fill="none" stroke={VS.sage} strokeWidth="1" opacity=".5"/>
+        <circle cx="30" cy="30" r="4" fill={VS.terracotta} opacity=".5"/>
+      </svg>
+      <div style={{fontSize:14,color:VS.sage,fontFamily:"'Inter',sans-serif"}}>Select a stage on the journey arc above</div>
+      <div style={{fontSize:12,color:VS.sand,maxWidth:320,fontFamily:"'Inter',sans-serif",lineHeight:1.6}}>
+        Each stage shows how different identities experience the same moment differently
+      </div>
+    </div>
+  );
+  const stageInfo=STAGE_LABELS.find(s=>s.id===activeStage);
+  const activeIds=selectedIds.length>0?selectedIds:['default'];
+  return(
+    <div key={activeStage} style={{flex:1,padding:'26px 36px',animation:'fadeIn .3s ease',overflowY:'auto'}}>
+      {/* Stage header */}
+      <div style={{marginBottom:18,paddingBottom:14,borderBottom:`1px solid ${VS.sand}`}}>
+        <div style={{fontSize:10,letterSpacing:2,textTransform:'uppercase',color:VS.sage,
+          fontFamily:"'Inter',sans-serif",marginBottom:6}}>
           Stage {STAGE_LABELS.findIndex(s=>s.id===activeStage)+1} of {STAGE_LABELS.length}
         </div>
-        <h2 style={{ fontSize:22, fontWeight:400, color:"#1a1a1a", marginBottom:4 }}>
+        <h2 style={{fontFamily:"'Lora','Georgia',serif",fontSize:22,fontWeight:700,color:VS.slate,marginBottom:5}}>
           {stageInfo.label}
         </h2>
-        <span style={{
-          display:"inline-block", fontSize:11, color:stageInfo.color,
-          background:`${stageInfo.color}15`, border:`1px solid ${stageInfo.color}35`,
-          borderRadius:20, padding:"3px 12px",
-          fontFamily:"system-ui,sans-serif", letterSpacing:.4,
-        }}>
+        <span style={{display:'inline-block',fontSize:11,color:stageInfo.color,
+          background:`${stageInfo.color}15`,border:`1px solid ${stageInfo.color}35`,
+          borderRadius:20,padding:'3px 12px',fontFamily:"'Inter',sans-serif",letterSpacing:.4}}>
           {stageInfo.emotion}
         </span>
       </div>
-
       {/* Per-identity sections */}
-      {activeIds.map(idKey => {
-        const identity = IDENTITIES[idKey];
-        if (!identity) return null;
-        const stageData = identity.stages[activeStage];
-        return (
-          <div key={idKey} style={{
-            marginBottom:28, paddingBottom:28,
-            borderBottom:"1px solid #f0f0f0",
-          }}>
-            {/* Identity header */}
-            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
-              <span style={{ fontSize:20 }}>{identity.emoji}</span>
+      {activeIds.map(idKey=>{
+        const identity=IDENTITIES[idKey]; if(!identity) return null;
+        const stageData=identity.stages[activeStage];
+        return(
+          <div key={idKey} style={{marginBottom:26,paddingBottom:26,borderBottom:`1px solid ${VS.blush}`}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+              <span style={{fontSize:18}}>{identity.emoji}</span>
               <div>
-                <div style={{ fontSize:14, fontWeight:600, color:identity.color,
-                  fontFamily:"system-ui,sans-serif" }}>
-                  {identity.label}
-                </div>
-                <div style={{ fontSize:11, color:"#aaa", fontFamily:"system-ui,sans-serif" }}>
-                  {identity.description}
-                </div>
+                <div style={{fontSize:14,fontWeight:600,color:identity.color,fontFamily:"'Inter',sans-serif"}}>{identity.label}</div>
+                <div style={{fontSize:11,color:VS.sage,fontFamily:"'Inter',sans-serif"}}>{identity.description}</div>
               </div>
             </div>
-
-            {/* Real quote(s) */}
-            <QuoteBlock quotes={stageData.quotes} color={identity.color} />
-
-            {/* Context */}
-            <p style={{ fontSize:14, color:"#555", lineHeight:1.75, maxWidth:600, marginBottom:12 }}>
-              {stageData.context}
-            </p>
-
-            {/* Forces */}
-            {stageData.pulls && stageData.pulls.length > 0 && (
+            <QuoteBlock quotes={stageData.quotes} color={identity.color}/>
+            <p style={{fontSize:14,color:VS.ink,lineHeight:1.8,maxWidth:580,marginBottom:12,opacity:.8}}>{stageData.context}</p>
+            {stageData.pulls&&stageData.pulls.length>0&&(
               <div>
-                <div style={{ fontSize:10, fontFamily:"system-ui,sans-serif",
-                  letterSpacing:1.5, textTransform:"uppercase", color:"#bbb", marginBottom:8 }}>
-                  Forces at work
-                </div>
-                <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
-                  {stageData.pulls.map(p => (
-                    <span key={p} style={{
-                      fontSize:12, padding:"5px 12px", borderRadius:20,
-                      background:`${identity.color}10`, color:identity.color,
-                      border:`1px solid ${identity.color}30`,
-                      fontFamily:"system-ui,sans-serif",
-                    }}>↓ {p}</span>
+                <div style={{fontSize:10,fontFamily:"'Inter',sans-serif",letterSpacing:1.5,
+                  textTransform:'uppercase',color:VS.sage,marginBottom:8}}>Forces at work</div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                  {stageData.pulls.map(p=>(
+                    <span key={p} style={{fontSize:12,padding:'5px 12px',borderRadius:20,
+                      background:VS.blush,color:VS.clay,border:`1px solid ${VS.sand}`,
+                      fontFamily:"'Inter',sans-serif"}}>↓ {p}</span>
                   ))}
                 </div>
               </div>
             )}
-
-            {/* Source */}
-            <div style={{ fontSize:10, color:"#ccc", marginTop:10,
-              fontFamily:"system-ui,sans-serif", fontStyle:"italic" }}>
+            <div style={{fontSize:10,color:VS.sand,marginTop:10,fontFamily:"'Inter',sans-serif",fontStyle:'italic'}}>
               Data: {identity.source}
             </div>
           </div>
@@ -742,181 +743,143 @@ function DetailPanel({ selectedIds, activeStage }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════
-// SYSTEM FORCES
-// ══════════════════════════════════════════════════════════
-const systemForces = [
-  { label:"Labour schedules", icon:"⏱", desc:"Shift patterns and long hours shrink available rest time." },
-  { label:"App ecosystems",    icon:"📱", desc:"Platforms engineered to capture attention before alternatives can form." },
-  { label:"Leisure infrastructure", icon:"🏚", desc:"Public spaces, libraries, community facilities have eroded." },
-  { label:"Overwork norms",    icon:"⚙️", desc:"Productivity is valorised; rest is a reward, not a right." },
-  { label:"Income & access",   icon:"💰", desc:"Many enriching activities carry a cost that constrains choice." },
-  { label:"Caregiving load",   icon:"👶", desc:"Fragmented caregiving leaves only slivers of genuine free time." },
-];
+// ── MAIN APP ──
+function DriftMap(){
+  const [selectedIds,setSelectedIds]=useState(['default']);
+  const [activeStage,setActiveStage]=useState(null);
+  const [showSystems,setShowSystems]=useState(false);
+  const [arcWidth,setArcWidth]=useState(900);
+  const arcRef=useRef(null);
 
-// ══════════════════════════════════════════════════════════
-// MAIN APP
-// ══════════════════════════════════════════════════════════
-function DriftMap() {
-  const [selectedIds, setSelectedIds] = useState(["default"]);
-  const [activeStage, setActiveStage] = useState(null);
-  const [showSystems, setShowSystems] = useState(false);
-  const [arcWidth, setArcWidth] = useState(900);
-  const arcRef = useRef(null);
+  useEffect(()=>{
+    const obs=new ResizeObserver(entries=>{ if(entries[0]) setArcWidth(entries[0].contentRect.width); });
+    if(arcRef.current) obs.observe(arcRef.current);
+    return()=>obs.disconnect();
+  },[]);
 
-  useEffect(() => {
-    const obs = new ResizeObserver(entries => {
-      if (entries[0]) setArcWidth(entries[0].contentRect.width);
-    });
-    if (arcRef.current) obs.observe(arcRef.current);
-    return () => obs.disconnect();
-  }, []);
-
-  function toggleIdentity(id) {
-    setSelectedIds(prev => {
-      if (prev.includes(id)) {
-        // Always keep at least one
-        if (prev.length === 1) return prev;
-        return prev.filter(x => x !== id);
-      }
-      return [...prev, id];
+  function toggleIdentity(id){
+    setSelectedIds(prev=>{
+      if(prev.includes(id)){ if(prev.length===1) return prev; return prev.filter(x=>x!==id); }
+      return [...prev,id];
     });
     setActiveStage(null);
   }
 
-  return (
-    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", background:"#f4f6f8" }}>
-
-      {/* ── TOP NAV ── */}
+  return(
+    <div style={{minHeight:'100vh',display:'flex',flexDirection:'column',background:VS.cream,position:'relative',zIndex:1}}>
+      {/* HEADER */}
       <header style={{
-        background:"#fff", borderBottom:"1px solid #e8eaed",
-        padding:"0 32px", height:56,
-        display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0,
+        background:VS.cream,borderBottom:`1px solid ${VS.sand}`,
+        padding:'0 32px',height:56,
+        display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0,
+        boxShadow:`0 1px 12px rgba(30,45,58,0.06)`,
       }}>
-        <div style={{ display:"flex", alignItems:"center", gap:14 }}>
-          <div style={{ fontSize:9, letterSpacing:3, textTransform:"uppercase",
-            color:"#bbb", fontFamily:"system-ui,sans-serif" }}>User Map</div>
-          <div style={{ width:1, height:18, background:"#e8e8e8" }} />
-          <div style={{ fontSize:15, fontWeight:400, color:"#2c2c2c" }}>
+        <div style={{display:'flex',alignItems:'center',gap:14}}>
+          {/* Leaf motif */}
+          <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
+            <path d="M8 18 C8 18 2 12 2 7 C2 3.7 4.7 1 8 1 C11.3 1 14 3.7 14 7 C14 12 8 18 8 18Z"
+              fill={VS.sage} opacity="0.4"/>
+            <line x1="8" y1="18" x2="8" y2="8" stroke={VS.moss} strokeWidth="1" opacity="0.6"/>
+          </svg>
+          <div style={{fontSize:9,letterSpacing:3,textTransform:'uppercase',color:VS.sage,fontFamily:"'Inter',sans-serif"}}>User Map</div>
+          <div style={{width:1,height:18,background:VS.sand}}/>
+          <div style={{fontFamily:"'Lora','Georgia',serif",fontSize:15,fontWeight:600,color:VS.slate}}>
             The Drift from Intention to Default
           </div>
         </div>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <span style={{ fontSize:11, color:"#bbb", fontStyle:"italic",
-            fontFamily:"system-ui,sans-serif", display:arcWidth<700?"none":"block" }}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <span style={{fontSize:11,color:VS.sage,fontStyle:'italic',fontFamily:"'Inter',sans-serif",
+            display:arcWidth<700?'none':'block'}}>
             How passive leisure becomes the outcome — not the choice
           </span>
-          <button onClick={() => setShowSystems(!showSystems)} style={{
-            background:showSystems ? "#5AAFB4" : "transparent",
-            color:showSystems ? "#fff" : "#5AAFB4",
-            border:"1.5px solid #5AAFB4", borderRadius:6,
-            padding:"5px 14px", fontSize:11, cursor:"pointer",
-            fontFamily:"system-ui,sans-serif", whiteSpace:"nowrap",
-            transition:"all .2s ease",
+          <button onClick={()=>setShowSystems(!showSystems)} style={{
+            background:showSystems?VS.terracotta:'transparent',
+            color:showSystems?VS.cream:VS.terracotta,
+            border:`1.5px solid ${VS.terracotta}`,borderRadius:8,
+            padding:'5px 14px',fontSize:11,cursor:'pointer',
+            fontFamily:"'Inter',sans-serif",whiteSpace:'nowrap',
+            transition:'all .2s ease',
           }}>
-            {showSystems ? "Hide" : "Show"} systemic forces
+            {showSystems?'Hide':'Show'} systemic forces
           </button>
         </div>
       </header>
 
-      {/* ── IDENTITY SELECTOR ── */}
+      {/* IDENTITY CHIPS */}
       <div style={{
-        background:"#fff", borderBottom:"1px solid #e8eaed",
-        padding:"12px 32px", display:"flex", flexWrap:"wrap",
-        alignItems:"center", gap:8, flexShrink:0,
+        background:VS.cream,borderBottom:`1px solid ${VS.sand}`,
+        padding:'10px 32px',display:'flex',flexWrap:'wrap',
+        alignItems:'center',gap:7,flexShrink:0,
       }}>
-        <span style={{ fontSize:10, letterSpacing:1.5, textTransform:"uppercase",
-          color:"#bbb", fontFamily:"system-ui,sans-serif", marginRight:4, flexShrink:0 }}>
+        <span style={{fontSize:10,letterSpacing:1.5,textTransform:'uppercase',
+          color:VS.sage,fontFamily:"'Inter',sans-serif",marginRight:4,flexShrink:0}}>
           Whose evening?
         </span>
         {IDENTITY_LIST.map(id => {
           const active = selectedIds.includes(id.id);
           return (
             <button key={id.id} onClick={() => toggleIdentity(id.id)} style={{
-              display:"flex", alignItems:"center", gap:6,
-              padding:"6px 14px", borderRadius:20,
-              border:`1.5px solid ${active ? id.color : "#e0e0e0"}`,
-              background:active ? `${id.color}15` : "transparent",
-              color:active ? id.color : "#888",
-              fontSize:12, fontFamily:"system-ui,sans-serif",
-              fontWeight:active ? 600 : 400,
-              cursor:"pointer", transition:"all .2s ease",
-              whiteSpace:"nowrap",
+              display:'flex', alignItems:'center', gap:5,
+              padding:'7px 14px', borderRadius:20,
+              border:`2px solid ${active ? id.color : VS.slate}`,
+              background: active ? id.color : VS.slate,
+              color: '#fff',
+              fontSize:12, fontFamily:"'Inter',sans-serif",
+              fontWeight: 600, cursor:'pointer',
+              transition:'all .2s ease', whiteSpace:'nowrap',
+              opacity: active ? 1 : 0.55,
+              boxShadow: active ? `0 3px 12px ${id.color}44` : 'none',
             }}>
-              <span style={{ fontSize:14 }}>{id.emoji}</span>
+              <span style={{fontSize:14}}>{id.emoji}</span>
               {id.label}
-              {active && selectedIds.length > 1 && (
-                <span style={{ fontSize:10, opacity:.6 }}>✕</span>
-              )}
+              {active && selectedIds.length > 1 && <span style={{fontSize:10, opacity:.7, marginLeft:2}}>✕</span>}
             </button>
           );
         })}
-        <span style={{ fontSize:10, color:"#ccc", fontFamily:"system-ui,sans-serif",
-          marginLeft:4, fontStyle:"italic" }}>
+        <span style={{fontSize:10,color:VS.sand,fontFamily:"'Inter',sans-serif",fontStyle:'italic'}}>
           Select multiple to overlay arcs
         </span>
       </div>
 
-      {/* ── JOURNEY ARC ── */}
-      <div ref={arcRef} style={{ background:"#fff", borderBottom:"1px solid #e8eaed", flexShrink:0 }}>
-        <JourneyArc
-          selectedIds={selectedIds}
-          activeStage={activeStage}
-          onStageClick={(id) => setActiveStage(prev => prev===id ? null : id)}
-          width={arcWidth}
-          height={220}
-        />
+      {/* ARC */}
+      <div ref={arcRef} style={{background:VS.cream,borderBottom:`1px solid ${VS.sand}`,flexShrink:0}}>
+        <JourneyArc selectedIds={selectedIds} activeStage={activeStage}
+          onStageClick={id=>setActiveStage(prev=>prev===id?null:id)}
+          width={arcWidth} height={220}/>
       </div>
 
-      {/* ── MAIN CONTENT ── */}
-      <div style={{ flex:1, display:"flex", minHeight:0 }}>
-
-        {/* Sidebar — stage list */}
-        <aside style={{
-          width:240, borderRight:"1px solid #e8eaed",
-          background:"#fff", overflowY:"auto", flexShrink:0,
-        }}>
-          {STAGE_LABELS.map((stage, i) => {
-            const isActive = activeStage === stage.id;
-            return (
-              <div key={stage.id}
-                onClick={() => setActiveStage(isActive ? null : stage.id)}
-                style={{
-                  display:"flex", alignItems:"center", gap:12,
-                  padding:"12px 18px", cursor:"pointer",
-                  background:isActive ? `${stage.color}10` : "transparent",
-                  borderLeft:isActive ? `3px solid ${stage.color}` : "3px solid transparent",
-                  transition:"all .2s ease",
-                }}>
-                <div style={{
-                  width:26, height:26, borderRadius:"50%",
-                  background:isActive ? stage.color : `${stage.color}18`,
-                  border:`2px solid ${stage.color}`,
-                  display:"flex", alignItems:"center", justifyContent:"center",
-                  fontSize:10, fontWeight:700, flexShrink:0,
-                  color:isActive ? "#fff" : stage.color,
-                  fontFamily:"system-ui,sans-serif",
-                  transition:"all .2s ease",
-                }}>
+      {/* MAIN */}
+      <div style={{flex:1,display:'flex',minHeight:0}}>
+        {/* Sidebar */}
+        <aside style={{width:230,borderRight:`1px solid ${VS.sand}`,background:VS.cream,overflowY:'auto',flexShrink:0}}>
+          {STAGE_LABELS.map((stage,i)=>{
+            const isActive=activeStage===stage.id;
+            return(
+              <div key={stage.id} onClick={()=>setActiveStage(isActive?null:stage.id)}
+                style={{display:'flex',alignItems:'center',gap:11,padding:'12px 18px',cursor:'pointer',
+                  background:isActive?`${stage.color}10`:VS.cream,
+                  borderLeft:isActive?`3px solid ${stage.color}`:`3px solid transparent`,
+                  transition:'all .2s ease'}}>
+                <div style={{width:28,height:28,borderRadius:'50%',
+                  background:isActive?stage.color:VS.slate,
+                  flexShrink:0,
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  fontSize:11,fontWeight:700,color:'#fff',
+                  fontFamily:"'Inter',sans-serif",
+                  transition:'all .2s ease',
+                  opacity: isActive ? 1 : 0.6,
+                  boxShadow:isActive?`0 2px 8px ${stage.color}55`:'none'}}>
                   {i+1}
                 </div>
                 <div>
-                  <div style={{ fontSize:12, fontWeight:isActive?600:400,
-                    color:isActive?"#1a1a1a":"#444", lineHeight:1.3 }}>
-                    {stage.label}
-                  </div>
-                  <div style={{ fontSize:10, color:"#bbb", marginTop:2,
-                    fontFamily:"system-ui,sans-serif" }}>
-                    {stage.emotion}
-                  </div>
-                  {/* Active identity dots */}
-                  {isActive && (
-                    <div style={{ display:"flex", gap:4, marginTop:5 }}>
-                      {selectedIds.map(k => IDENTITIES[k]).filter(Boolean).map(id => (
-                        <div key={id.id} title={id.label} style={{
-                          width:8, height:8, borderRadius:"50%",
-                          background:id.color, flexShrink:0,
-                        }} />
+                  <div style={{fontSize:12,fontWeight:isActive?700:500,
+                    color:isActive?VS.ink:VS.slate,lineHeight:1.3}}>{stage.label}</div>
+                  <div style={{fontSize:10,color:isActive?stage.color:VS.terracotta,
+                    marginTop:2,fontFamily:"'Inter',sans-serif",fontWeight:isActive?600:400}}>{stage.emotion}</div>
+                  {isActive&&(
+                    <div style={{display:'flex',gap:3,marginTop:5}}>
+                      {selectedIds.map(k=>IDENTITIES[k]).filter(Boolean).map(id=>(
+                        <div key={id.id} title={id.label} style={{width:7,height:7,borderRadius:'50%',background:id.color}}/>
                       ))}
                     </div>
                   )}
@@ -925,68 +888,52 @@ function DriftMap() {
             );
           })}
         </aside>
-
-        {/* Detail panel */}
-        <main style={{ flex:1, overflowY:"auto", display:"flex", flexDirection:"column" }}>
-          <DetailPanel selectedIds={selectedIds} activeStage={activeStage} />
+        {/* Detail */}
+        <main style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column'}}>
+          <DetailPanel selectedIds={selectedIds} activeStage={activeStage}/>
         </main>
       </div>
 
-      {/* ── SYSTEMIC FORCES DRAWER ── */}
-      {showSystems && (
-        <div style={{
-          background:"#fff", borderTop:"1px solid #e8eaed",
-          padding:"20px 32px", animation:"fadeIn .3s ease", flexShrink:0,
-        }}>
-          <div style={{ display:"flex", alignItems:"baseline", gap:14, marginBottom:14 }}>
-            <div style={{ fontSize:10, fontFamily:"system-ui,sans-serif",
-              letterSpacing:2, textTransform:"uppercase", color:"#5AAFB4", fontWeight:600 }}>
+      {/* SYSTEMIC FORCES */}
+      {showSystems&&(
+        <div style={{background:VS.mist,borderTop:`1px solid ${VS.sand}`,padding:'18px 32px',animation:'fadeIn .3s ease',flexShrink:0}}>
+          <div style={{display:'flex',alignItems:'baseline',gap:14,marginBottom:14}}>
+            <div style={{fontSize:10,fontFamily:"'Inter',sans-serif",letterSpacing:2,
+              textTransform:'uppercase',color:VS.moss,fontWeight:600}}>
               Systemic forces shaping the drift
             </div>
-            <div style={{ fontSize:12, color:"#aaa", fontStyle:"italic" }}>
+            <div style={{fontSize:12,color:VS.slate,fontStyle:'italic',fontFamily:"'Lora',serif"}}>
               The drift is not a personal failure — these are the conditions that make passive leisure the path of least resistance.
             </div>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))", gap:10 }}>
-            {systemForces.map(f => (
-              <div key={f.label} style={{
-                padding:"12px 14px", borderRadius:8,
-                background:"#f0f8f9", border:"1px solid #d4ecee",
-              }}>
-                <div style={{ fontSize:20, marginBottom:7 }}>{f.icon}</div>
-                <div style={{ fontSize:12, fontWeight:600, color:"#1a4a4c",
-                  fontFamily:"system-ui,sans-serif", marginBottom:3 }}>
-                  {f.label}
-                </div>
-                <div style={{ fontSize:11, color:"#6a8a8c",
-                  fontFamily:"system-ui,sans-serif", lineHeight:1.5 }}>
-                  {f.desc}
-                </div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:10}}>
+            {systemForces.map(f=>(
+              <div key={f.label} style={{padding:'12px 14px',borderRadius:10,background:VS.cream,border:`1px solid ${VS.sand}`}}>
+                <div style={{fontSize:20,marginBottom:7}}>{f.icon}</div>
+                <div style={{fontSize:12,fontWeight:600,color:VS.slate,fontFamily:"'Inter',sans-serif",marginBottom:3}}>{f.label}</div>
+                <div style={{fontSize:11,color:VS.ink,fontFamily:"'Inter',sans-serif",lineHeight:1.5,opacity:.7}}>{f.desc}</div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* ── FOOTER ── */}
-      <footer style={{
-        background:"#fff", borderTop:"1px solid #e8eaed",
-        padding:"12px 32px", display:"flex",
-        alignItems:"center", justifyContent:"space-between", flexShrink:0,
-      }}>
-        <p style={{ fontSize:12, color:"#aaa", fontStyle:"italic", maxWidth:580 }}>
+      {/* FOOTER */}
+      <footer style={{background:VS.cream,borderTop:`1px solid ${VS.sand}`,
+        padding:'12px 32px',display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
+        {/* Horizon line motif */}
+        <p style={{fontFamily:"'Lora','Georgia',serif",fontSize:13,color:VS.sage,fontStyle:'italic',maxWidth:560}}>
           "Passive leisure wins when it is the easiest option to enter. The real question is: what would make intentional leisure easier to start?"
         </p>
-        <span style={{ fontSize:10, color:"#ddd", fontFamily:"system-ui,sans-serif" }}>
-          Click a stage · Select multiple identities to compare arcs
+        <span style={{fontSize:10,color:VS.sand,fontFamily:"'Inter',sans-serif"}}>
+          Click a stage · Select multiple identities to compare
         </span>
       </footer>
     </div>
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<DriftMap />);
+ReactDOM.createRoot(document.getElementById('root')).render(<DriftMap/>);
 </script>
 </body>
 </html>

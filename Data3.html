@@ -5,84 +5,86 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>The Leisure Gap — Four Lenses</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
-*{box-sizing:border-box;margin:0;padding:0}
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
 :root{
-  --bg:#0c0c10;--surface:#111116;--border:#1e1e26;
-  --text:#e4e0db;--muted:#6a6560;--faint:#2a2a30;
-  --amber:#f59e0b;--coral:#e85d4a;--teal:#2dd4bf;
-  --violet:#a78bfa;--green:#4caf7d;--blue:#60a5fa;
+  --cream:#F6EFE4;--sand:#E2D0B8;--terracotta:#C97B55;--clay:#A85C3A;
+  --sage:#7BA899;--moss:#4E7B6F;--slate:#3D5A6C;--ink:#1E2D3A;
+  --mist:#D8E6E2;--blush:#F0D9CC;
+  --serif:'Lora','Georgia',serif;--sans:'Inter','Helvetica Neue',sans-serif;
 }
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
-
-/* ─── ONBOARDING ─── */
-#onboard{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center}
-#onboard h1{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,3rem);color:#fff;line-height:1.2;max-width:680px;margin-bottom:1rem}
-#onboard h1 em{color:var(--amber);font-style:italic}
-#onboard p{font-size:.95rem;color:var(--muted);max-width:540px;line-height:1.8;margin-bottom:1.5rem}
-.lens-preview{display:flex;gap:12px;margin-bottom:2rem;flex-wrap:wrap;justify-content:center}
-.lp{padding:8px 16px;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
-.ob-start{padding:12px 32px;background:var(--amber);color:#0c0c10;border:none;border-radius:40px;font-size:.85rem;font-weight:700;cursor:pointer;letter-spacing:.04em;transition:opacity .2s}
-.ob-start:hover{opacity:.85}
-
-/* ─── MAIN LAYOUT ─── */
-#app{opacity:0;transition:opacity .6s;display:flex;flex-direction:column;min-height:100vh}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);color:var(--ink);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(circle,rgba(123,168,153,0.12) 1px,transparent 1px);
+  background-size:28px 28px;}
+#onboard{position:fixed;inset:0;background:var(--cream);z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:2rem;text-align:center;}
+#onboard::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:400px;height:72px;border-top:1.5px solid var(--sand);
+  border-radius:200px 200px 0 0;opacity:.45;}
+#onboard h1{font-family:var(--serif);font-size:clamp(1.6rem,3.5vw,2.5rem);
+  color:var(--slate);line-height:1.25;max-width:620px;margin-bottom:.9rem;font-weight:700;}
+#onboard h1 em{color:var(--terracotta);font-style:italic}
+#onboard p{font-size:.93rem;color:var(--ink);max-width:500px;line-height:1.8;margin-bottom:1.3rem;opacity:.75}
+.lens-preview{display:flex;gap:9px;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center}
+.lp{padding:7px 14px;border-radius:20px;font-size:.7rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;font-family:var(--sans)}
+#ob-btn{padding:11px 32px;background:var(--terracotta);color:var(--cream);border:none;
+  border-radius:40px;font-size:.85rem;font-weight:600;cursor:pointer;letter-spacing:.04em;
+  font-family:var(--sans);transition:background .2s;position:relative;z-index:1;}
+#ob-btn:hover{background:var(--clay)}
+#app{opacity:0;transition:opacity .5s;display:flex;flex-direction:column;min-height:100vh;position:relative;z-index:1}
 #app.on{opacity:1}
-.top-bar{padding:20px 32px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.title-block h2{font-family:'Playfair Display',serif;font-size:clamp(1.2rem,2.5vw,1.8rem);color:#fff;line-height:1.2}
-.title-block h2 em{color:var(--amber);font-style:italic}
-.title-block p{font-size:.8rem;color:var(--muted);margin-top:4px;max-width:420px;line-height:1.6}
-
-/* ─── LENS TABS ─── */
-.lens-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:16px 32px 0}
-.ltab{padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.75rem;font-weight:700;cursor:pointer;letter-spacing:.05em;text-transform:uppercase;transition:all .2s;display:flex;align-items:center;gap:6px}
-.ltab:hover{border-color:#333;color:#aaa}
-.ltab.active{color:#0c0c10;border-color:transparent}
-.ltab .dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.7}
-
-/* ─── CANVAS AREA ─── */
-#viz-wrap{position:relative;padding:16px 32px 0;flex:1}
-canvas{display:block;width:100%;border-radius:10px;background:var(--surface)}
-
-/* ─── SOURCE STRIP ─── */
-.src-strip{margin:8px 32px 0;font-size:.68rem;color:#2e2e38;line-height:1.6;border-left:2px solid var(--border);padding-left:10px}
-.src-strip strong{color:#3a3a46}
-
-/* ─── INFO PANEL ─── */
-#info-panel{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px 32px 20px}
-.ip-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
-.ip-num{font-size:1.6rem;font-weight:900;line-height:1;margin-bottom:3px}
-.ip-label{font-size:.72rem;color:var(--muted);line-height:1.5}
-.ip-src{font-size:.62rem;color:var(--faint);margin-top:5px}
-
-/* ─── TOOLTIP ─── */
-#tt{position:fixed;pointer-events:none;opacity:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 15px;max-width:250px;z-index:500;transition:opacity .12s;font-size:.8rem}
-#tt .tt-name{font-weight:700;margin-bottom:6px;font-size:.85rem}
-#tt .tt-rows div{display:flex;justify-content:space-between;gap:14px;color:var(--muted);margin-bottom:3px;font-size:.75rem}
-#tt .tt-rows span{color:var(--text);font-weight:600}
-#tt .tt-insight{font-size:.72rem;color:#888;margin-top:8px;border-top:1px solid var(--border);padding-top:7px;line-height:1.6;font-style:italic}
-#tt .tt-src{font-size:.65rem;color:#333;margin-top:5px}
-
-@media(max-width:600px){
-  .top-bar,.lens-tabs,#viz-wrap,.src-strip,#info-panel{padding-left:16px;padding-right:16px}
-  #info-panel{grid-template-columns:1fr 1fr}
-}
+.top-bar{padding:18px 28px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.title-block h2{font-family:var(--serif);font-size:clamp(1.1rem,2.2vw,1.6rem);color:var(--slate);font-weight:700}
+.title-block h2 em{color:var(--terracotta);font-style:italic}
+.title-block p{font-size:.78rem;color:var(--ink);margin-top:4px;max-width:400px;line-height:1.6;opacity:.65}
+.lens-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:12px 28px 0}
+.ltab{padding:7px 14px;border-radius:8px;border:1.5px solid var(--sand);background:transparent;
+  color:var(--slate);font-size:.7rem;font-weight:600;cursor:pointer;letter-spacing:.05em;
+  text-transform:uppercase;transition:all .2s;display:flex;align-items:center;gap:5px;
+  font-family:var(--sans);}
+.ltab:hover{border-color:var(--sage);color:var(--moss)}
+.ltab.active{color:var(--cream);border-color:transparent}
+.ltab .dot{width:6px;height:6px;border-radius:50%}
+.horizon{margin:8px 28px 0;height:1px;background:linear-gradient(90deg,transparent,var(--sand),transparent);position:relative}
+.horizon::after{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:7px;height:7px;border-radius:50%;background:var(--terracotta);opacity:.45}
+#viz-wrap{position:relative;padding:12px 28px 0;flex:1}
+canvas{display:block;width:100%;border-radius:12px;background:rgba(246,239,228,0.5);border:1px solid var(--sand)}
+.src-strip{margin:7px 28px 0;font-size:.66rem;color:var(--sage);line-height:1.6;
+  border-left:3px solid var(--mist);padding-left:10px;font-family:var(--sans);}
+.src-strip strong{color:var(--moss)}
+#info-panel{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:10px 28px 18px}
+.ip-card{background:rgba(255,255,255,0.55);border:1px solid var(--sand);border-radius:12px;padding:13px 15px}
+.ip-num{font-family:var(--serif);font-size:1.55rem;font-weight:700;line-height:1;margin-bottom:3px}
+.ip-label{font-size:.7rem;color:var(--ink);line-height:1.5;opacity:.7}
+.ip-src{font-size:.6rem;color:var(--sage);margin-top:4px;font-style:italic}
+#tt{position:fixed;pointer-events:none;opacity:0;background:rgba(246,239,228,0.97);
+  border:1.5px solid var(--sand);border-radius:12px;padding:11px 14px;max-width:250px;
+  z-index:500;transition:opacity .12s;font-size:.78rem;box-shadow:0 6px 24px rgba(30,45,58,0.1);}
+#tt .tt-name{font-family:var(--serif);font-weight:700;margin-bottom:5px;font-size:.83rem;color:var(--slate)}
+#tt .tt-rows div{display:flex;justify-content:space-between;gap:12px;color:var(--sage);margin-bottom:3px;font-size:.72rem}
+#tt .tt-rows span{color:var(--ink);font-weight:600}
+#tt .tt-insight{font-size:.7rem;color:var(--clay);margin-top:7px;border-top:1px solid var(--sand);padding-top:6px;line-height:1.6;font-style:italic}
+#tt .tt-src{font-size:.62rem;color:var(--sage);margin-top:4px;opacity:.6}
+@media(max-width:600px){.top-bar,.lens-tabs,#viz-wrap,.src-strip,#info-panel{padding-left:14px;padding-right:14px}#info-panel{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
-
-<!-- ONBOARDING -->
 <div id="onboard">
   <h1>Leisure isn't just a personal choice.<br/>It's shaped by <em>where you are</em> in life.</h1>
-  <p>This visualization shows how free time — and the barriers to spending it meaningfully — differ across four real-world lenses. Each lens uses actual survey data from across the globe.</p>
+  <p>How free time — and the barriers to spending it meaningfully — differ across four real-world lenses, using actual survey data from across the globe.</p>
   <div class="lens-preview">
-    <div class="lp" style="background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44">🕐 Age & Life Stage</div>
-    <div class="lp" style="background:#60a5fa22;color:#60a5fa;border:1px solid #60a5fa44">📱 Technology</div>
-    <div class="lp" style="background:#4caf7d22;color:#4caf7d;border:1px solid #4caf7d44">💼 Career & Income</div>
-    <div class="lp" style="background:#a78bfa22;color:#a78bfa;border:1px solid #a78bfa44">🌍 Region & Culture</div>
+    <div class="lp" style="background:rgba(201,123,85,0.12);color:var(--terracotta);border:1px solid rgba(201,123,85,0.3)">🕐 Age & Life Stage</div>
+    <div class="lp" style="background:rgba(61,90,108,0.1);color:var(--slate);border:1px solid rgba(61,90,108,0.25)">📱 Technology</div>
+    <div class="lp" style="background:rgba(78,123,111,0.1);color:var(--moss);border:1px solid rgba(78,123,111,0.25)">💼 Career & Income</div>
+    <div class="lp" style="background:rgba(123,168,153,0.15);color:var(--sage);border:1px solid rgba(123,168,153,0.35)">🌍 Region & Culture</div>
   </div>
-  <p style="font-size:.78rem;color:#3a3a46;max-width:480px">Sources: BLS ATUS 2024 · ABS 2024 · OECD Time Use Database · Japan Statistics Bureau 2021 · India TUS 2024 · South Africa TUS · Pew Research · Ofcom 2025 · Our World in Data</p>
-  <button class="ob-start" onclick="startApp()">Explore the four lenses →</button>
+  <p style="font-size:.72rem;color:var(--moss);background:var(--mist);padding:9px 14px;border-radius:10px;max-width:460px">
+    BLS ATUS 2024 · ABS 2024 · OECD · Japan Statistics Bureau 2021 · India TUS 2024 · Pew Research · Ofcom 2025 · Our World in Data
+  </p>
+  <br/>
+  <button id="ob-btn">Explore the four lenses →</button>
 </div>
 
 <div id="app">
@@ -93,11 +95,12 @@ canvas{display:block;width:100%;border-radius:10px;background:var(--surface)}
     </div>
   </div>
   <div class="lens-tabs">
-    <button class="ltab active" data-lens="age" style="background:#f59e0b;color:#0c0c10"><span class="dot"></span>Age & Life Stage</button>
-    <button class="ltab" data-lens="tech"><span class="dot" style="background:#60a5fa"></span>Technology</button>
-    <button class="ltab" data-lens="career"><span class="dot" style="background:#4caf7d"></span>Career & Income</button>
-    <button class="ltab" data-lens="region"><span class="dot" style="background:#a78bfa"></span>Region & Culture</button>
+    <button class="ltab" data-lens="age">🕐 Age & Life Stage</button>
+    <button class="ltab" data-lens="tech">📱 Technology</button>
+    <button class="ltab" data-lens="career">💼 Career & Income</button>
+    <button class="ltab" data-lens="region">🌍 Region & Culture</button>
   </div>
+  <div class="horizon"></div>
   <div id="viz-wrap"><canvas id="cv"></canvas></div>
   <div class="src-strip" id="src-strip"></div>
   <div id="info-panel"></div>
@@ -105,529 +108,289 @@ canvas{display:block;width:100%;border-radius:10px;background:var(--surface)}
 <div id="tt"><div class="tt-name" id="tt-n"></div><div class="tt-rows" id="tt-r"></div><div class="tt-insight" id="tt-i"></div><div class="tt-src" id="tt-s"></div></div>
 
 <script>
-// ══════════════════════════════════════════════
-// DATA
-// ══════════════════════════════════════════════
-const LENSES = {
+const C={cream:'#F6EFE4',sand:'#E2D0B8',terracotta:'#C97B55',clay:'#A85C3A',sage:'#7BA899',moss:'#4E7B6F',slate:'#3D5A6C',ink:'#1E2D3A',mist:'#D8E6E2',blush:'#F0D9CC'};
 
-  // ── LENS 1: AGE ──
-  age: {
-    label: 'Age & Life Stage',
-    color: '#f59e0b',
-    chartType: 'bar-group',
-    source: 'BLS American Time Use Survey 2024 · Australian Bureau of Statistics Time Use 2024 · Japan Statistics Bureau Time Use 2021',
-    insight: ['Teens game & scroll the most', 'Ages 25–44 have least free time (caregiving + career)', 'TV dominates 55+, especially 65+'],
-    panels: [
-      {num:'2.7h', label:'Avg free time, ages 25–34 (US weekday)', col:'#f59e0b', src:'BLS ATUS 2024'},
-      {num:'6.2h', label:'Avg free time, ages 65–74 (US weekday)', col:'#e85d4a', src:'BLS ATUS 2024'},
-      {num:'49%', label:'Women 35–44 in Australia "always rushed"', col:'#60a5fa', src:'ABS 2024'},
+const LENSES={
+  age:{label:'Age & Life Stage',color:C.terracotta,chartType:'bar-group',
+    source:'BLS ATUS 2024 · ABS 2024 · Japan Statistics Bureau 2021',
+    insight:['Teens game most (1.24h/day)','Ages 25–44 have least leisure — caregiving + career crunch','TV dominates 55+, especially 65+'],
+    panels:[{num:'2.7h',label:'Avg leisure, ages 25–34 (US weekday)',col:C.terracotta,src:'BLS ATUS 2024'},{num:'6.2h',label:'Avg leisure, ages 65–74 (US weekday)',col:C.clay,src:'BLS ATUS 2024'},{num:'49%',label:'Women 35–44 in Australia "always rushed"',col:C.slate,src:'ABS 2024'}],
+    groups:['15–19','20–24','25–34','35–44','45–54','55–64','65–74','75+'],
+    series:[
+      {name:'TV/Streaming',color:'#6366f1',values:[1.90,1.52,1.56,1.65,1.86,2.78,3.73,4.39]},
+      {name:'Sports',color:C.clay,values:[0.65,0.50,0.24,0.21,0.24,0.25,0.32,0.29]},
+      {name:'Games',color:C.moss,values:[1.24,0.95,0.80,0.30,0.27,0.33,0.46,0.47]},
+      {name:'Socializing',color:C.terracotta,values:[0.46,0.51,0.36,0.36,0.44,0.47,0.49,0.49]},
+      {name:'Reading',color:C.sage,values:[0.00,0.08,0.16,0.14,0.17,0.34,0.47,0.73]},
     ],
-    // groups = age bands, bars = activity types (weekday hours)
-    groups: ['15–19','20–24','25–34','35–44','45–54','55–64','65–74','75+'],
-    series: [
-      {name:'TV/Streaming', color:'#6366f1', values:[1.90,1.52,1.56,1.65,1.86,2.78,3.73,4.39]},
-      {name:'Sports/Exercise',color:'#ef4444',values:[0.65,0.50,0.24,0.21,0.24,0.25,0.32,0.29]},
-      {name:'Games',         color:'#10b981',values:[1.24,0.95,0.80,0.30,0.27,0.33,0.46,0.47]},
-      {name:'Socializing',   color:'#f59e0b',values:[0.46,0.51,0.36,0.36,0.44,0.47,0.49,0.49]},
-      {name:'Reading',       color:'#8b5cf6',values:[0.00,0.08,0.16,0.14,0.17,0.34,0.47,0.73]},
-    ],
-    tooltipExtra: [
-      'Peak gaming age — 1.24h games/day on weekdays (BLS). AUS: 33% of males 15–24 game daily (ABS 2024).',
-      'Young adults transition to work & independence. Screen time still dominates free time.',
-      'Caregiving + career peak. Only 2.7h leisure/day (US). AUS: 49% of women 35–44 "always rushed" (ABS).',
-      'Parenting crunch. Youngest leisure of any group — 3.15h/day avg. Children under 6: only 2.7h free.',
-      'Leisure recovering as children grow. TV rebounds to 1.86h/day.',
-      'Pre-retirement expansion. TV surges to 2.78h — now the dominant activity.',
-      'Retirement. Most free time (6.22h/day) but dominated by TV (3.73h). Reading doubles.',
-      'Oldest group: 7.28h leisure but TV = 4.39h/day. Reading at 0.73h — highest of any group.',
+    tips:['Peak gaming (1.24h). AUS: 33% of males 15–24 game daily (ABS 2024).','Young adults — work/independence transition. Screen time still dominant.','Caregiving + career crunch. Only 2.7h/day. AUS: 49% women 35–44 "always rushed".','Parenting crunch. 3.15h/day avg. Children under 6: only 2.7h free.','Leisure recovering. TV rebounds to 1.86h.','Pre-retirement expansion. TV surges to 2.78h.','Retirement. 6.22h/day but TV = 3.73h. Reading doubles.','75+: 7.28h leisure. TV = 4.39h/day. Reading at 0.73h — highest of any group.']
+  },
+  tech:{label:'Technology & Digital Defaults',color:C.slate,chartType:'scatter',
+    source:'Ofcom Online Nation 2025 · Pew Research 2024 · GSMA 2024 · BLS ATUS 2024',
+    insight:['UK: 4h online daily, 60% smartphone (Ofcom 2025)','Social media avg 4.2/7 enjoyment — yet 1.2h/day','Developing economies: smartphone-first creates passive defaults before leisure infrastructure exists'],
+    panels:[{num:'4h',label:'UK adults online daily (60% smartphone)',col:C.slate,src:'Ofcom 2025'},{num:'4.2',label:'Avg enjoyment score for social media /7',col:C.clay,src:'UK TUS / Nature 2025'},{num:'83%',label:'Advanced economy adults with smartphone',col:C.moss,src:'Pew Research 2024'}],
+    points:[
+      {label:'🇳🇴 Norway',x:97,y:1.8,active:3.2,context:'369min/day — highest OECD. Hygge + labour law.',src:'OECD'},
+      {label:'🇬🇧 UK',x:93,y:3.1,active:2.1,context:'4h online/day, 60% smartphone. Social media top for 16–24s.',src:'Ofcom 2025'},
+      {label:'🇺🇸 USA',x:91,y:3.2,active:1.4,context:'2.8h TV + 1.2h social. Lowest active leisure of high-income nations.',src:'BLS ATUS 2024'},
+      {label:'🇦🇺 Australia',x:91,y:2.9,active:2.2,context:'TV 62% participation. Social media 25% avg 1.4h/day.',src:'ABS 2024'},
+      {label:'🇯🇵 Japan',x:88,y:2.1,active:1.3,context:'3.6h leisure avg — 48% TV. Karoshi culture.',src:'Japan Bureau 2021'},
+      {label:'🇰🇷 S.Korea',x:95,y:2.4,active:1.2,context:'Highest smartphone penetration globally. OECD high work hours.',src:'OECD / Pew'},
+      {label:'🇧🇷 Brazil',x:77,y:2.8,active:2.6,context:'9.5h online/day — highest globally. Social leisure culturally strong.',src:'DataReportal 2024'},
+      {label:'🇮🇳 India',x:54,y:1.4,active:1.8,context:'Huge variation by income/urban/rural. Rapid smartphone adoption.',src:'India TUS 2024'},
+      {label:'🇳🇬 Nigeria',x:39,y:0.9,active:2.4,context:'Mobile-first. Leisure social/community-based.',src:'GSMA 2024'},
+      {label:'🇿🇦 S.Africa',x:72,y:1.6,active:2.1,context:'Shifting with smartphone adoption.',src:'StatsSA / GSMA'},
+      {label:'🇲🇽 Mexico',x:68,y:1.9,active:2.5,context:'172min/day. Social leisure more prevalent.',src:'Our World in Data'},
+      {label:'🇸🇦 Saudi',x:96,y:3.0,active:1.4,context:"High penetration. Jumu'ah provides structured rest.",src:'Pew 2024'},
     ]
   },
-
-  // ── LENS 2: TECHNOLOGY ──
-  tech: {
-    label: 'Technology & Digital Defaults',
-    color: '#60a5fa',
-    chartType: 'scatter',
-    source: 'Ofcom Online Nation 2025 · Pew Research Mobile Technology 2024 · GSMA Mobile Economy 2024 · BLS ATUS 2024 · Ofcom 2025',
-    insight: ['UK adults spend 4h online daily — 60% on smartphones (Ofcom 2025)', 'Social media avg enjoyment: 4.2/7 — yet avg 1.2h/day spent', 'Smartphone-first users in developing regions: leap directly into passive digital defaults'],
-    panels: [
-      {num:'4h',   label:'UK adults online daily — 60% on smartphone (Ofcom 2025)', col:'#60a5fa', src:'Ofcom Online Nation 2025'},
-      {num:'4.2',  label:'Avg enjoyment score for social media scrolling (out of 7)', col:'#e85d4a', src:'UK Time Use Survey / Nature 2025'},
-      {num:'83%',  label:'Adults in advanced economies own a smartphone (Pew 2024)',  col:'#4caf7d', src:'Pew Research 2024'},
-    ],
-    // scatter: x=smartphone penetration %, y=passive digital leisure hours/day, bubble=active leisure hrs
-    points: [
-      {label:'🇳🇴 Norway',       x:97, y:1.8, active:3.2, context:'High penetration — but strong cultural protection for leisure. 369min/day total free time (OECD). Labour laws limit overwork.', src:'OECD TUD · Our World in Data'},
-      {label:'🇬🇧 UK',           x:93, y:3.1, active:2.1, context:'Ofcom 2025: avg 4h online/day, 60% smartphone. Social media is top online activity for 16–24s.', src:'Ofcom Online Nation 2025'},
-      {label:'🇺🇸 USA',          x:91, y:3.2, active:1.4, context:'BLS 2024: 2.8h TV + 1.2h social scrolling. Lowest active leisure of high-income nations.', src:'BLS ATUS 2024'},
-      {label:'🇦🇺 Australia',    x:91, y:2.9, active:2.2, context:'ABS 2024: TV/streaming 62% participation. Social media & browsing: 25% avg 1.4h/day.', src:'ABS Time Use 2024'},
-      {label:'🇯🇵 Japan',        x:88, y:2.1, active:1.3, context:'Japan Bureau 2021: leisure 3.6h avg — but 48% is TV. Overwork culture (karoshi) compresses all leisure.', src:'Japan Statistics Bureau 2021'},
-      {label:'🇰🇷 S. Korea',     x:95, y:2.4, active:1.2, context:'Highest smartphone penetration globally. Screen time dominant; work hours among highest in OECD.', src:'OECD / Pew Research'},
-      {label:'🇧🇷 Brazil',       x:77, y:2.8, active:2.6, context:'DataReportal 2024: avg 9.5h online/day — highest globally. Social leisure still strong culturally.', src:'DataReportal 2024'},
-      {label:'🇮🇳 India',        x:54, y:1.4, active:1.8, context:'India TUS 2024: leisure varies hugely by income and urban/rural. Rapid smartphone adoption driving digital defaults.', src:'India TUS 2024 / Pew 2019'},
-      {label:'🇳🇬 Nigeria',      x:39, y:0.9, active:2.4, context:'GSMA 2024: Sub-Saharan Africa mobile-first internet. Leisure is social/community-based — less passive.', src:'GSMA Mobile Economy 2024'},
-      {label:'🇿🇦 S. Africa',    x:72, y:1.6, active:2.1, context:'SA TUS 2000 baseline + GSMA trends: leisure patterns shifting with smartphone adoption.', src:'StatsSA TUS / GSMA 2024'},
-      {label:'🇲🇽 Mexico',       x:68, y:1.9, active:2.5, context:'Our World in Data: 172min/day leisure — lower than US (292min). Social leisure more prevalent than digital.', src:'Our World in Data / OECD'},
-      {label:'🇸🇦 Saudi Arabia', x:96, y:3.0, active:1.4, context:'Pew: very high smartphone penetration. Jumu\'ah (Friday) provides structured rest — but digital defaults strong.', src:'Pew Research 2024'},
+  career:{label:'Career & Socioeconomic',color:C.moss,chartType:'slope',
+    source:'BLS ATUS 2024 Table 11B — by employment, earnings, education',
+    insight:['Not employed: 6.4h free/day — 53% TV','Highest earners: better mix — more sport, reading','Education flips TV dominance: Bachelor+ → more active leisure'],
+    panels:[{num:'3.2h',label:'TV/day, workers earning <$840/week',col:C.clay,src:'BLS ATUS 2024'},{num:'1.5h',label:'TV/day, workers earning $1,971+/week',col:C.moss,src:'BLS ATUS 2024'},{num:'+2.6h',label:'Leisure gap: weekday vs. weekend (full-time)',col:C.terracotta,src:'BLS ATUS 2024'}],
+    groups:[
+      {label:'Not employed',weekday:6.42,weekend:7.30,tv_wd:3.45,tv_we:4.00,color:C.clay,insight:'Most free time — but 53% is TV. No structure → passive default.'},
+      {label:'Part-time',weekday:4.49,weekend:5.10,tv_wd:2.20,tv_we:2.42,color:C.terracotta,insight:'More balanced. Flexible time, some structure.'},
+      {label:'Full-time',weekday:3.18,weekend:5.81,tv_wd:1.58,tv_we:2.78,color:C.sage,insight:'3.18h/day. Weekend doubles. Leisure confined to weekends.'},
+      {label:'Earn <$840',weekday:3.24,weekend:5.47,tv_wd:1.81,tv_we:2.78,color:'#6366f1',insight:'TV = 56% of weekday leisure. Cultural leisure less accessible.'},
+      {label:'Earn $1,971+',weekday:3.09,weekend:6.02,tv_wd:1.47,tv_we:2.75,color:C.moss,insight:'Least weekday time but better mix: sport, reading, socializing.'},
+      {label:'No HS diploma',weekday:5.02,weekend:5.87,tv_wd:2.82,tv_we:3.39,color:'#ec4899',insight:'More time but TV dominates (56%). Cultural access limited.'},
+      {label:"Bachelor's+",weekday:3.99,weekend:5.98,tv_wd:1.90,tv_we:2.81,color:C.slate,insight:'More exercise, reading, socializing. TV drops to 48%.'},
     ]
   },
-
-  // ── LENS 3: CAREER / INCOME ──
-  career: {
-    label: 'Career & Socioeconomic Position',
-    color: '#4caf7d',
-    chartType: 'slope',
-    source: 'BLS ATUS 2024 (Table 11B) — leisure by employment status, earnings quartile, education · ABS 2024',
-    insight: ['Not employed: 6.4h free/day — but 3.45h is TV (53%)', 'Highest earners ($1,971+): 3.09h free, but 1.47h TV (47%)', 'Education flips TV dominance: Bachelor+ → more exercise & reading, less TV'],
-    panels: [
-      {num:'3.2h', label:'TV/day for workers earning under $840/week', col:'#e85d4a', src:'BLS ATUS 2024'},
-      {num:'1.5h', label:'TV/day for workers earning $1,971+/week',    col:'#4caf7d', src:'BLS ATUS 2024'},
-      {num:'+1.4h',label:'More leisure on weekends for full-time vs part-time workers', col:'#f59e0b', src:'BLS ATUS 2024'},
-    ],
-    // slope chart: left = weekday leisure, right = weekend leisure, by group
-    groups: [
-      {label:'Not employed',    weekday:6.42, weekend:7.30, tv_wd:3.45, tv_we:4.00, color:'#e85d4a', insight:'Most free time — but 53% is TV. No structure, no social default into screens.'},
-      {label:'Part-time',       weekday:4.49, weekend:5.10, tv_wd:2.20, tv_we:2.42, color:'#f59e0b', insight:'More balanced than full-time. More flexible time, some work structure.'},
-      {label:'Full-time',       weekday:3.18, weekend:5.81, tv_wd:1.58, tv_we:2.78, color:'#4caf7d', insight:'Weekday crunch is severe — 3.18h. Weekend leisure doubles. Leisure confined to weekends.'},
-      {label:'Earn <$840/wk',   weekday:3.24, weekend:5.47, tv_wd:1.81, tv_we:2.78, color:'#a78bfa', insight:'Low-income full-time: TV= 56% of weekday leisure. Physical & cultural leisure less accessible.'},
-      {label:'Earn $1,971+/wk', weekday:3.09, weekend:6.02, tv_wd:1.47, tv_we:2.75, color:'#60a5fa', insight:'Highest earners have least weekday free time but better quality: more sport, reading, socializing.'},
-      {label:'No HS diploma',   weekday:5.02, weekend:5.87, tv_wd:2.82, tv_we:3.39, color:'#ec4899', insight:'More time but less variety. TV dominates (56%). Cultural and recreational infrastructure less accessible.'},
-      {label:"Bachelor's+",     weekday:3.99, weekend:5.98, tv_wd:1.90, tv_we:2.81, color:'#2dd4bf', insight:'Education correlates with more exercise, reading, socializing — TV drops to 48% of leisure.'},
-    ]
-  },
-
-  // ── LENS 4: REGION & CULTURE ──
-  region: {
-    label: 'Region, Culture & Religion',
-    color: '#a78bfa',
-    chartType: 'world-bar',
-    source: 'OECD Time Use Database · Our World in Data Time Use · Japan Statistics Bureau 2021 · India TUS 2024 · South Africa TUS · DataReportal 2024 · Pew Research Religion & Wellbeing 2019',
-    insight: ['Norway has most free time (369min/day) — protected by labour law & hygge culture', 'Japan: karoshi culture — overwork deaths. Leisure = 3.6h, mostly TV', 'Sabbath/Shabbat/Jumu\'ah: religious structured rest protects meaningful leisure for millions'],
-    panels: [
-      {num:'369min', label:'Daily leisure time in Norway — most of any OECD nation (Our World in Data)', col:'#a78bfa', src:'OECD TUD / Our World in Data'},
-      {num:'172min', label:'Daily leisure time in Mexico — compressed by informal labour hours',          col:'#f59e0b', src:'Our World in Data / OECD'},
-      {num:'25%',    label:'Adults globally whose leisure is shaped by religious weekly rest practices',  col:'#2dd4bf', src:'Pew Research 2019'},
-    ],
-    regions: [
-      // label, leisure_min, tv_pct, active_pct, structured_rest, context
-      {label:'🇳🇴 Norway',       mins:369, tv:42, active:32, rest:'Strong (Work Time Directive + hygge culture)', color:'#a78bfa', insight:'369min/day — highest globally. Hygge culture values intentional domestic leisure. Working Time Directive limits hours. Active outdoor culture: hiking, skiing, socialising.', src:'OECD TUD · Our World in Data'},
-      {label:'🇩🇪 Germany',      mins:328, tv:45, active:28, rest:'Strong (EU Working Time Directive)', color:'#a78bfa', insight:'Feierabend (sacred after-work time). Strict labour protections. Cultural permission to stop work completely at end of day.', src:'OECD TUD'},
-      {label:'🇫🇷 France',       mins:330, tv:46, active:27, rest:'Strong (35hr work week)', color:'#a78bfa', insight:'35-hour work week. Lunch as leisure ritual. High cultural value on joie de vivre — savouring time.', src:'OECD TUD'},
-      {label:'🇺🇸 USA',          mins:292, tv:55, active:14, rest:'Weak (no federal mandate)', color:'#60a5fa', insight:'292min/day but TV=55%. No federal working time protection. Always-on work culture. Low vacation uptake.', src:'BLS ATUS 2024 · Our World in Data'},
-      {label:'🇬🇧 UK',           mins:305, tv:48, active:20, rest:'Moderate (EU WTD post-Brexit opt-out)', color:'#60a5fa', insight:'Ofcom 2025: avg 4h online/day. Work-life boundaries eroding with WFH. Screen default strong.', src:'Ofcom 2025 · OECD'},
-      {label:'🇦🇺 Australia',    mins:334, tv:50, active:22, rest:'Moderate', color:'#60a5fa', insight:'ABS 2024: 5.5h free/day avg. TV/streaming at 2.55h. 33% feel "always rushed". Sport culture strong but time-pressured.', src:'ABS Time Use 2024'},
-      {label:'🇯🇵 Japan',        mins:215, tv:46, active:12, rest:'Weak (karoshi culture)', color:'#e85d4a', insight:'215min/day — one of lowest in OECD. Karoshi (death by overwork) culturally acknowledged. Nemui (sleep) often replaces meaningful leisure. Taiken-gata: experience-based leisure growing in youth.', src:'Japan Statistics Bureau 2021'},
-      {label:'🇰🇷 S. Korea',     mins:220, tv:44, active:13, rest:'Weak (improving post-2018 reform)', color:'#e85d4a', insight:'Work hour reforms since 2018 improving. But screen time dominant — highest smartphone penetration globally.', src:'OECD / Pew Research'},
-      {label:'🇮🇳 India',        mins:240, tv:38, active:18, rest:'Mixed (regional & religious variation)', color:'#f59e0b', insight:'India TUS 2024: huge variation by state, income, urban/rural. Rapid smartphone adoption creating new passive defaults without leisure infrastructure.', src:'India TUS 2024 (PIB)'},
-      {label:'🇲🇽 Mexico',       mins:172, tv:41, active:24, rest:'Weak (informal labour)', color:'#f59e0b', insight:'172min/day — compressed by long informal work hours. Social leisure (family, community) more resilient than digital. Evening plaza culture.', src:'Our World in Data / OECD'},
-      {label:'🇧🇷 Brazil',       mins:280, tv:44, active:28, rest:'Moderate', color:'#f59e0b', insight:'DataReportal 2024: 9.5h online/day — highest globally. But social leisure (football, samba, family) remains culturally dominant.', src:'DataReportal 2024'},
-      {label:'🇳🇬 Nigeria',      mins:195, tv:25, active:35, rest:'Strong (Friday Jumu\'ah + Sunday)', color:'#4caf7d', insight:'GSMA 2024: mobile-first but social/community leisure dominant. Religious rest (Jumu\'ah, Sunday) provides structured weekly downtime.', src:'GSMA Mobile Economy 2024'},
-      {label:'🇮🇱 Israel',       mins:268, tv:40, active:22, rest:'Very Strong (Shabbat — 25hr tech-free)', color:'#4caf7d', insight:'Shabbat provides 25 hours of state-supported, technology-free rest weekly. Psychology research: Shabbat observers report lower anxiety and higher life satisfaction. (Psychology Today, 2013)', src:'Pew Research Religion 2019'},
-      {label:'🇸🇦 Saudi Arabia', mins:250, tv:48, active:18, rest:'Strong (Jumu\'ah Friday + prayer structure)', color:'#4caf7d', insight:'Jumu\'ah (Friday prayer + community gathering) structures weekly leisure. Five daily prayer pauses provide micro-rest throughout the day.', src:'Pew Research / Islamic sources'},
+  region:{label:'Region, Culture & Religion',color:C.sage,chartType:'world-bar',
+    source:'OECD TUD · Our World in Data · Japan Bureau 2021 · India TUS 2024 · South Africa TUS · DataReportal 2024 · Pew Research 2019',
+    insight:['Norway 369min/day — labour law + hygge','Japan karoshi: leisure at 215min/day','Shabbat / Jumu\'ah: structured rest protects millions weekly'],
+    panels:[{num:'369',label:"Norway's daily leisure — most in OECD",col:C.sage,src:'OECD / Our World in Data'},{num:'172',label:"Mexico's daily leisure — informal labour compression",col:C.terracotta,src:'Our World in Data'},{num:'25%',label:'Adults globally shaped by weekly religious rest',col:C.moss,src:'Pew Research 2019'}],
+    regions:[
+      {label:'🇳🇴 Norway',mins:369,tv:42,active:32,rest:'Strong',color:C.moss,insight:'Hygge + EU Working Time Directive. Friluftsliv as baseline expectation.',src:'OECD'},
+      {label:'🇩🇪 Germany',mins:328,tv:45,active:28,rest:'Strong',color:C.sage,insight:'Feierabend — sacred after-work time. EU WTD.',src:'OECD'},
+      {label:'🇫🇷 France',mins:330,tv:46,active:27,rest:'Strong',color:C.sage,insight:'35-hour week. Joie de vivre — savouring time.',src:'OECD'},
+      {label:'🇺🇸 USA',mins:292,tv:55,active:14,rest:'Weak',color:C.terracotta,insight:'No federal working time protection. Always-on culture.',src:'BLS ATUS 2024'},
+      {label:'🇬🇧 UK',mins:305,tv:48,active:20,rest:'Moderate',color:C.clay,insight:'4h online/day. WFH eroding work-life boundaries.',src:'Ofcom 2025'},
+      {label:'🇦🇺 Australia',mins:334,tv:50,active:22,rest:'Moderate',color:C.terracotta,insight:'5.5h free/day. 33% feel "always rushed". Sport culture strong.',src:'ABS 2024'},
+      {label:'🇯🇵 Japan',mins:215,tv:46,active:12,rest:'Weak',color:'#6366f1',insight:'Lowest OECD. Karoshi acknowledged. Sleep replaces meaningful leisure.',src:'Japan Bureau 2021'},
+      {label:'🇰🇷 S.Korea',mins:220,tv:44,active:13,rest:'Weak',color:'#6366f1',insight:'Work hour reforms since 2018. Screen time dominant.',src:'OECD / Pew'},
+      {label:'🇮🇳 India',mins:240,tv:38,active:18,rest:'Mixed',color:C.sand,insight:'Huge variation by state/income. Smartphone adoption accelerating.',src:'India TUS 2024'},
+      {label:'🇲🇽 Mexico',mins:172,tv:41,active:24,rest:'Weak',color:C.terracotta,insight:'172min/day. Social leisure (family, community) resilient.',src:'Our World in Data'},
+      {label:'🇧🇷 Brazil',mins:280,tv:44,active:28,rest:'Moderate',color:C.clay,insight:'9.5h online/day globally highest. Social leisure still dominant.',src:'DataReportal 2024'},
+      {label:'🇳🇬 Nigeria',mins:195,tv:25,active:35,rest:'Strong',color:C.moss,insight:"Mobile-first. Community leisure dominant. Jumu'ah + Sunday rest.",src:'GSMA 2024'},
+      {label:'🇮🇱 Israel',mins:268,tv:40,active:22,rest:'Very Strong',color:C.sage,insight:'Shabbat: 25hr tech-free weekly rest. Observers: lower anxiety, higher satisfaction.',src:'Pew 2019'},
+      {label:'🇸🇦 Saudi',mins:250,tv:48,active:18,rest:'Strong',color:C.sage,insight:"Jumu'ah + 5 daily prayers as structured micro-rest.",src:'Pew 2024'},
     ]
   }
 };
 
-// ══════════════════════════════════════════════
-// ENGINE
-// ══════════════════════════════════════════════
-const cv = document.getElementById('cv');
-const ctx = cv.getContext('2d');
-let W, H, dpr, activeLens = 'age';
-let hovIdx = -1;
-let hitBoxes = [];
+let cv,ctx,W,H,dpr,activeLens=null,hovIdx=-1,hitBoxes=[];
 
-function resize() {
-  dpr = window.devicePixelRatio || 1;
-  const wrap = document.getElementById('viz-wrap');
-  W = wrap.clientWidth;
-  H = Math.min(window.innerHeight * 0.55, 480);
-  cv.width = W * dpr; cv.height = H * dpr;
-  cv.style.width = W + 'px'; cv.style.height = H + 'px';
-  ctx.scale(dpr, dpr);
-  render();
+function init(){
+  cv=document.getElementById('cv');
+  ctx=cv.getContext('2d');
+  document.getElementById('ob-btn').addEventListener('click',startApp);
+  document.querySelectorAll('.ltab').forEach(btn=>btn.addEventListener('click',()=>setLens(btn.dataset.lens)));
+  window.addEventListener('resize',()=>{if(activeLens)resize()});
 }
 
-function setLens(key) {
-  activeLens = key;
-  hovIdx = -1;
-  document.querySelectorAll('.ltab').forEach(t => {
-    const active = t.dataset.lens === key;
-    t.classList.toggle('active', active);
-    if (active) {
-      t.style.background = LENSES[key].color;
-      t.style.color = '#0c0c10';
-    } else {
-      t.style.background = '';
-      t.style.color = '';
-    }
-  });
-  updateMeta();
-  render();
+function resize(){
+  dpr=window.devicePixelRatio||1;
+  const wrap=document.getElementById('viz-wrap');
+  W=wrap.clientWidth;H=Math.min(window.innerHeight*.52,460);
+  cv.width=W*dpr;cv.height=H*dpr;
+  cv.style.width=W+'px';cv.style.height=H+'px';
+  ctx.scale(dpr,dpr);
+  if(activeLens)render();
 }
 
-function updateMeta() {
-  const L = LENSES[activeLens];
-  document.getElementById('src-strip').innerHTML =
-    `<strong>Sources:</strong> ${L.source}`;
-  const pan = document.getElementById('info-panel');
-  pan.innerHTML = L.panels.map(p => `
-    <div class="ip-card">
-      <div class="ip-num" style="color:${p.col}">${p.num}</div>
-      <div class="ip-label">${p.label}</div>
-      <div class="ip-src">${p.src}</div>
-    </div>`).join('');
-}
-
-// ── RENDER DISPATCHER ──
-function render() {
-  ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = '#111116';
-  ctx.fillRect(0, 0, W, H);
-  hitBoxes = [];
-  const L = LENSES[activeLens];
-  if (L.chartType === 'bar-group')  drawBarGroup(L);
-  else if (L.chartType === 'scatter')    drawScatter(L);
-  else if (L.chartType === 'slope')      drawSlope(L);
-  else if (L.chartType === 'world-bar')  drawWorldBar(L);
-}
-
-// ── 1. BAR GROUP (Age lens) ──
-function drawBarGroup(L) {
-  const pad = {l:50,r:16,t:36,b:64};
-  const pw = W-pad.l-pad.r, ph = H-pad.t-pad.b;
-  const nGroups = L.groups.length;
-  const nSeries = L.series.length;
-  const groupW = pw / nGroups;
-  const barW = Math.min(groupW * 0.8 / nSeries, 18);
-  const maxVal = 5; // max hours y-axis
-
-  // grid
-  [0,1,2,3,4,5].forEach(v => {
-    const y = pad.t + ph - (v/maxVal)*ph;
-    ctx.strokeStyle = '#181820'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l+pw, y); ctx.stroke();
-    ctx.fillStyle = '#2e2e38'; ctx.font = '9px Inter,sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText(v+'h', pad.l-5, y+3);
-  });
-
-  // title
-  ctx.fillStyle = '#3a3a46'; ctx.font = 'bold 10px Inter,sans-serif'; ctx.textAlign = 'left';
-  ctx.fillText('Average weekday leisure hours by age (US, BLS ATUS 2024)', pad.l, pad.t - 14);
-
-  // bars
-  L.groups.forEach((grp, gi) => {
-    const gx = pad.l + gi * groupW + groupW * 0.1;
-    L.series.forEach((ser, si) => {
-      const val = ser.values[gi];
-      const bh = (val / maxVal) * ph;
-      const bx = gx + si * (barW + 2);
-      const by = pad.t + ph - bh;
-      const isHov = hovIdx === gi * nSeries + si;
-      ctx.fillStyle = isHov ? ser.color : ser.color + 'bb';
-      ctx.beginPath();
-      ctx.roundRect ? ctx.roundRect(bx, by, barW, bh, [3,3,0,0]) : ctx.rect(bx,by,barW,bh);
-      ctx.fill();
-      hitBoxes.push({x:bx,y:by,w:barW,h:bh,idx:gi*nSeries+si,
-        name:`${grp} — ${ser.name}`,
-        rows:[['Hours/weekday', val+'h'], ['Age group', grp], ['Activity', ser.name]],
-        insight: L.tooltipExtra[gi],
-        src:'BLS ATUS 2024'
-      });
-    });
-    // group label
-    const lx = gx + (nSeries * (barW + 2)) / 2;
-    ctx.fillStyle = '#4a4a58'; ctx.font = '9px Inter,sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(grp, lx, pad.t + ph + 16);
-  });
-
-  // legend
-  const lx0 = pad.l;
-  L.series.forEach((s, i) => {
-    const lx = lx0 + i * (pw / L.series.length);
-    ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(lx+6, pad.t+ph+34, 5, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#4a4a58'; ctx.font = '9px Inter,sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(s.name, lx+14, pad.t+ph+37);
-  });
-}
-
-// ── 2. SCATTER (Tech lens) ──
-function drawScatter(L) {
-  const pad = {l:56,r:24,t:36,b:54};
-  const pw = W-pad.l-pad.r, ph = H-pad.t-pad.b;
-
-  // quadrant shading
-  const midX = pad.l + pw*0.7;
-  const midY = pad.t + ph*0.45;
-  ctx.fillStyle = 'rgba(232,93,74,0.04)'; ctx.fillRect(pad.l, midY, pw*0.7, ph-(midY-pad.t));
-  ctx.fillStyle = 'rgba(74,144,217,0.04)'; ctx.fillRect(midX, pad.t, pw*0.3, midY-pad.t);
-
-  // grid
-  [0,20,40,60,80,100].forEach(v => {
-    const x = pad.l + (v/100)*pw;
-    ctx.strokeStyle = '#181820'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, pad.t+ph); ctx.stroke();
-    ctx.fillStyle = '#2e2e38'; ctx.font = '9px Inter,sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(v+'%', x, pad.t+ph+16);
-  });
-  [0,1,2,3,4].forEach(v => {
-    const y = pad.t + ph - (v/4)*ph;
-    ctx.strokeStyle = '#181820'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l+pw, y); ctx.stroke();
-    ctx.fillStyle = '#2e2e38'; ctx.font = '9px Inter,sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText(v+'h', pad.l-5, y+3);
-  });
-
-  // axis labels
-  ctx.fillStyle = '#3a3a46'; ctx.font = '9px Inter,sans-serif'; ctx.textAlign = 'center';
-  ctx.fillText('Smartphone penetration (% population) →', pad.l+pw/2, pad.t+ph+36);
-  ctx.save(); ctx.translate(14, pad.t+ph/2); ctx.rotate(-Math.PI/2);
-  ctx.fillText('Passive digital leisure (h/day) →', 0, 0); ctx.restore();
-
-  ctx.fillStyle = '#2e2e38'; ctx.font = 'bold 10px Inter,sans-serif'; ctx.textAlign = 'left';
-  ctx.fillText('Smartphone penetration vs. passive digital leisure hours/day · Bubble = active leisure hrs', pad.l, pad.t-14);
-
-  // zone labels
-  ctx.fillStyle = 'rgba(232,93,74,0.7)'; ctx.font = 'bold 10px Inter,sans-serif';
-  ctx.textAlign = 'left'; ctx.fillText('HIGH PENETRATION / HIGH PASSIVE', pad.l+pw*0.45, pad.t+ph-10);
-  ctx.fillStyle = 'rgba(96,165,250,0.7)';
-  ctx.textAlign = 'right'; ctx.fillText('HIGH PENETRATION / LOW PASSIVE', pad.l+pw-4, pad.t+18);
-
-  // dots
-  L.points.forEach((p, i) => {
-    const x = pad.l + (p.x/100)*pw;
-    const y = pad.t + ph - (p.y/4)*ph;
-    const r = 6 + p.active * 3.5;
-    const isHov = hovIdx === i;
-    // active ring
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
-    ctx.fillStyle = isHov ? '#60a5fa44' : '#60a5fa18'; ctx.fill();
-    // passive dot
-    ctx.beginPath(); ctx.arc(x, y, r*0.55, 0, Math.PI*2);
-    ctx.fillStyle = isHov ? '#e85d4a' : '#e85d4acc'; ctx.fill();
-    // label
-    ctx.font = `${isHov?'bold ':''}9px Inter,sans-serif`;
-    ctx.fillStyle = isHov ? '#fff' : '#4a4a58';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-    ctx.fillText(p.label, x, y - r - 3);
-    ctx.textBaseline = 'alphabetic';
-    hitBoxes.push({x:x-r,y:y-r,w:r*2,h:r*2,idx:i,
-      name:p.label,
-      rows:[['Smartphone penetration',p.x+'%'],['Passive digital leisure',p.y+'h/day'],['Active leisure',p.active+'h/day']],
-      insight:p.context, src:p.src
-    });
-  });
-
-  // legend
-  const lx = pad.l;
-  ctx.beginPath(); ctx.arc(lx+6, pad.t+ph+38, 8, 0, Math.PI*2);
-  ctx.fillStyle='#60a5fa18'; ctx.fill();
-  ctx.beginPath(); ctx.arc(lx+6, pad.t+ph+38, 4, 0, Math.PI*2);
-  ctx.fillStyle='#e85d4a'; ctx.fill();
-  ctx.fillStyle='#3a3a46'; ctx.font='9px Inter,sans-serif'; ctx.textAlign='left';
-  ctx.fillText('Red dot = passive digital hrs · Blue ring = active leisure hrs (bigger ring = more active leisure)', lx+18, pad.t+ph+41);
-}
-
-// ── 3. SLOPE (Career lens) ──
-function drawSlope(L) {
-  const pad = {l:110,r:110,t:40,b:50};
-  const pw = W-pad.l-pad.r, ph = H-pad.t-pad.b;
-  const lx = pad.l, rx = pad.l+pw;
-  const maxH = 8;
-
-  // axes
-  ctx.fillStyle = '#2e2e38'; ctx.font = 'bold 10px Inter,sans-serif'; ctx.textAlign = 'center';
-  ctx.fillText('Weekday leisure', lx, pad.t-14);
-  ctx.fillText('Weekend leisure', rx, pad.t-14);
-  ctx.strokeStyle = '#1e1e26'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(lx, pad.t); ctx.lineTo(lx, pad.t+ph); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(rx, pad.t); ctx.lineTo(rx, pad.t+ph); ctx.stroke();
-
-  [0,2,4,6,8].forEach(v => {
-    const y = pad.t + ph - (v/maxH)*ph;
-    ctx.strokeStyle='#181820'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(pad.l-8, y); ctx.lineTo(rx+8, y); ctx.stroke();
-    ctx.fillStyle='#2e2e38'; ctx.font='9px Inter,sans-serif'; ctx.textAlign='right';
-    ctx.fillText(v+'h', pad.l-12, y+3);
-  });
-
-  ctx.fillStyle = '#2e2e38'; ctx.font = 'bold 10px Inter,sans-serif'; ctx.textAlign = 'left';
-  ctx.fillText('Weekday vs. Weekend leisure hours by employment & income (BLS ATUS 2024)', pad.l, pad.t-26);
-
-  L.groups.forEach((g, i) => {
-    const ly = pad.t + ph - (g.weekday/maxH)*ph;
-    const ry = pad.t + ph - (g.weekend/maxH)*ph;
-    const isHov = hovIdx === i;
-
-    // line
-    ctx.strokeStyle = isHov ? g.color : g.color+'88';
-    ctx.lineWidth = isHov ? 2.5 : 1.5;
-    ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(rx, ry); ctx.stroke();
-
-    // dots
-    [lx, rx].forEach((x, si) => {
-      const y2 = si === 0 ? ly : ry;
-      ctx.beginPath(); ctx.arc(x, y2, isHov ? 7 : 5, 0, Math.PI*2);
-      ctx.fillStyle = isHov ? g.color : g.color+'cc'; ctx.fill();
-      hitBoxes.push({x:x-8,y:y2-8,w:16,h:16,idx:i,
-        name:g.label,
-        rows:[['Weekday',g.weekday+'h/day'],['Weekend',g.weekend+'h/day'],['TV (weekday)',g.tv_wd+'h'],['TV (weekend)',g.tv_we+'h']],
-        insight:g.insight, src:'BLS ATUS 2024'
-      });
-    });
-
-    // left label
-    ctx.font = `${isHov?'bold ':''}9px Inter,sans-serif`;
-    ctx.fillStyle = isHov ? g.color : '#4a4a58';
-    ctx.textAlign = 'right';
-    ctx.fillText(g.label, lx-14, ly+3);
-    ctx.fillText(g.weekday+'h', lx-14, ly+13);
-
-    // right label
-    ctx.textAlign = 'left';
-    ctx.fillText(g.weekend+'h', rx+14, ry+3);
-    // TV annotation
-    const tvPctWd = Math.round(g.tv_wd/g.weekday*100);
-    ctx.fillStyle='#3a3a46'; ctx.font='8px Inter,sans-serif';
-    ctx.fillText(`TV: ${tvPctWd}%`, rx+14, ry+12);
-  });
-
-  // sub-note
-  ctx.fillStyle='#2a2a36'; ctx.font='9px Inter,sans-serif'; ctx.textAlign='center';
-  ctx.fillText('Lines show the jump from weekday to weekend. Steeper = more leisure time confined to weekends.', W/2, pad.t+ph+32);
-}
-
-// ── 4. WORLD BAR (Region lens) ──
-function drawWorldBar(L) {
-  const pad = {l:148,r:24,t:36,b:36};
-  const pw = W-pad.l-pad.r, ph = H-pad.t-pad.b;
-  const rows = L.regions;
-  const rowH = ph / rows.length;
-  const maxMins = 400;
-
-  ctx.fillStyle='#2e2e38'; ctx.font='bold 10px Inter,sans-serif'; ctx.textAlign='left';
-  ctx.fillText('Daily leisure minutes by country — with TV%, active leisure%, and structured rest (OECD + national surveys)', pad.l, pad.t-14);
-
-  rows.forEach((r, i) => {
-    const ry = pad.t + i * rowH;
-    const bh = Math.min(rowH * 0.55, 20);
-    const by = ry + (rowH - bh) / 2;
-    const bw = (r.mins / maxMins) * pw;
-    const isHov = hovIdx === i;
-
-    // TV bar (darker inner)
-    const tvW = bw * r.tv / 100;
-    ctx.fillStyle = isHov ? r.color + 'dd' : r.color + '55';
-    ctx.beginPath();
-    if(ctx.roundRect) ctx.roundRect(pad.l, by, bw, bh, 4);
-    else ctx.rect(pad.l, by, bw, bh);
-    ctx.fill();
-    // Active leisure overlay
-    const actW = bw * r.active / 100;
-    ctx.fillStyle = '#4caf7d' + (isHov ? 'dd' : '55');
-    ctx.beginPath();
-    if(ctx.roundRect) ctx.roundRect(pad.l + tvW, by, actW, bh, [0,4,4,0]);
-    else ctx.rect(pad.l+tvW, by, actW, bh);
-    ctx.fill();
-
-    // bar border
-    if(isHov){
-      ctx.strokeStyle = r.color; ctx.lineWidth=1.5;
-      ctx.beginPath();
-      if(ctx.roundRect) ctx.roundRect(pad.l, by, bw, bh, 4);
-      else ctx.rect(pad.l,by,bw,bh);
-      ctx.stroke();
-    }
-
-    // label
-    ctx.font = `${isHov?'bold ':''}9px Inter,sans-serif`;
-    ctx.fillStyle = isHov ? '#fff' : '#5a5a68';
-    ctx.textAlign = 'right';
-    ctx.fillText(r.label, pad.l - 6, by + bh*0.65);
-
-    // minutes
-    ctx.textAlign = 'left';
-    ctx.fillStyle = isHov ? r.color : '#3a3a46';
-    ctx.fillText(r.mins + 'min', pad.l + bw + 6, by + bh*0.65);
-
-    // structured rest tag
-    if (r.rest.includes('Very Strong') || r.rest.includes('Strong')) {
-      const tag = r.rest.includes('Very Strong') ? '✦' : '●';
-      ctx.fillStyle = '#2dd4bf'; ctx.font = '8px Inter,sans-serif';
-      ctx.fillText(tag, pad.l + bw + 42, by + bh*0.65);
-    }
-
-    hitBoxes.push({x:pad.l,y:by,w:bw,h:bh,idx:i,
-      name:r.label,
-      rows:[['Daily leisure',r.mins+'min'],['TV share',r.tv+'%'],['Active leisure',r.active+'%'],['Structured rest',r.rest]],
-      insight:r.insight, src:r.src
-    });
-  });
-
-  // Legend
-  const lx = pad.l;
-  const ly = pad.t + ph + 16;
-  ctx.fillStyle='#5a5a68'; ctx.fillRect(lx,ly-7,20,8);
-  ctx.fillStyle='#4a4a58'; ctx.font='9px Inter,sans-serif'; ctx.textAlign='left';
-  ctx.fillText('TV / passive', lx+24, ly);
-  ctx.fillStyle='#4caf7d55'; ctx.fillRect(lx+100,ly-7,20,8);
-  ctx.fillStyle='#4a4a58';
-  ctx.fillText('Active leisure', lx+124, ly);
-  ctx.fillStyle='#2dd4bf'; ctx.font='11px Inter,sans-serif';
-  ctx.fillText('✦', lx+220, ly);
-  ctx.fillStyle='#4a4a58'; ctx.font='9px Inter,sans-serif';
-  ctx.fillText('= structured weekly rest', lx+234, ly);
-}
-
-// ── INTERACTION ──
-function getHit(mx, my) {
-  for (let h of hitBoxes) {
-    if (mx >= h.x && mx <= h.x+h.w && my >= h.y && my <= h.y+h.h) return h;
-  }
-  return null;
-}
-
-cv.addEventListener('mousemove', e => {
-  const rect = cv.getBoundingClientRect();
-  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-  const hit = getHit(mx, my);
-  const newIdx = hit ? hit.idx : -1;
-  if (newIdx !== hovIdx) { hovIdx = newIdx; render(); }
-  const tt = document.getElementById('tt');
-  if (hit) {
-    document.getElementById('tt-n').textContent = hit.name;
-    document.getElementById('tt-r').innerHTML = hit.rows.map(r =>
-      `<div>${r[0]}<span>${r[1]}</span></div>`).join('');
-    document.getElementById('tt-i').textContent = hit.insight;
-    document.getElementById('tt-s').textContent = 'Source: ' + hit.src;
-    tt.style.opacity = '1';
-    const tx = Math.min(e.clientX+16, window.innerWidth-260);
-    tt.style.left = tx+'px';
-    tt.style.top = Math.max(e.clientY-50, 10)+'px';
-  } else {
-    tt.style.opacity = '0';
-  }
-});
-cv.addEventListener('mouseleave', () => { hovIdx=-1; render(); document.getElementById('tt').style.opacity='0'; });
-
-document.querySelectorAll('.ltab').forEach(btn => {
-  btn.addEventListener('click', () => setLens(btn.dataset.lens));
-});
-
-function startApp() {
-  document.getElementById('onboard').style.opacity = '0';
-  document.getElementById('onboard').style.transition = 'opacity .5s';
-  setTimeout(() => {
-    document.getElementById('onboard').style.display = 'none';
+function startApp(){
+  const ob=document.getElementById('onboard');
+  ob.style.transition='opacity .45s';ob.style.opacity='0';
+  setTimeout(()=>{
+    ob.style.display='none';
     document.getElementById('app').classList.add('on');
-    setLens('age');
-    resize();
-  }, 500);
+    setTimeout(()=>{resize();setLens('age')},50);
+  },450);
 }
 
-window.addEventListener('resize', resize);
-updateMeta();
+function setLens(key){
+  activeLens=key;hovIdx=-1;
+  document.querySelectorAll('.ltab').forEach(t=>{
+    const on=t.dataset.lens===key;
+    t.classList.toggle('active',on);
+    t.style.background=on?LENSES[key].color:'';
+    t.style.color=on?C.cream:'';
+  });
+  updateMeta();resize();
+}
+
+function updateMeta(){
+  const L=LENSES[activeLens];
+  document.getElementById('src-strip').innerHTML=`<strong>Sources:</strong> ${L.source}`;
+  document.getElementById('info-panel').innerHTML=L.panels.map(p=>`
+    <div class="ip-card"><div class="ip-num" style="color:${p.col}">${p.num}</div>
+    <div class="ip-label">${p.label}</div><div class="ip-src">${p.src}</div></div>`).join('');
+}
+
+function render(){
+  if(!ctx||!activeLens)return;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='rgba(246,239,228,0.4)';ctx.fillRect(0,0,W,H);
+  hitBoxes=[];
+  const L=LENSES[activeLens];
+  if(L.chartType==='bar-group')drawBarGroup(L);
+  else if(L.chartType==='scatter')drawScatter(L);
+  else if(L.chartType==='slope')drawSlope(L);
+  else drawWorldBar(L);
+}
+
+function gs(){ctx.strokeStyle=C.sand;ctx.lineWidth=1}
+function ls(c){ctx.fillStyle=c||C.sage;ctx.font='500 9px Inter,sans-serif'}
+
+function drawBarGroup(L){
+  const pad={l:52,r:14,t:38,b:62},pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
+  const nG=L.groups.length,nS=L.series.length,gW=pw/nG,bW=Math.min(gW*.8/nS,16),maxV=5;
+  [0,1,2,3,4,5].forEach(v=>{
+    const y=pad.t+ph-(v/maxV)*ph;gs();ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+pw,y);ctx.stroke();
+    ls();ctx.textAlign='right';ctx.fillText(v+'h',pad.l-5,y+3);
+  });
+  ctx.fillStyle=C.moss;ctx.font='600 10px Inter,sans-serif';ctx.textAlign='left';
+  ctx.fillText('Average weekday leisure hours by age (US) — BLS ATUS 2024',pad.l,pad.t-14);
+  L.groups.forEach((g,gi)=>{
+    const gx=pad.l+gi*gW+gW*.1;
+    L.series.forEach((s,si)=>{
+      const v=s.values[gi],bh=(v/maxV)*ph,bx=gx+si*(bW+2),by=pad.t+ph-bh,isH=hovIdx===gi*nS+si;
+      ctx.fillStyle=isH?s.color:s.color+'aa';
+      if(ctx.roundRect){ctx.beginPath();ctx.roundRect(bx,by,bW,bh,[3,3,0,0]);ctx.fill()}else ctx.fillRect(bx,by,bW,bh);
+      hitBoxes.push({x:bx,y:by,w:bW,h:bh,idx:gi*nS+si,name:`${g} — ${s.name}`,
+        rows:[['Hours/weekday',v+'h'],['Age',g],['Activity',s.name]],insight:L.tips[gi],src:'BLS ATUS 2024'});
+    });
+    ctx.fillStyle=C.slate;ctx.font='9px Inter,sans-serif';ctx.textAlign='center';
+    ctx.fillText(g,gx+(nS*(bW+2))/2,pad.t+ph+15);
+  });
+  L.series.forEach((s,i)=>{
+    const lx=pad.l+i*(pw/L.series.length);
+    ctx.fillStyle=s.color;ctx.beginPath();ctx.arc(lx+6,pad.t+ph+32,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=C.slate;ctx.font='9px Inter,sans-serif';ctx.textAlign='left';ctx.fillText(s.name,lx+13,pad.t+ph+35);
+  });
+}
+
+function drawScatter(L){
+  const pad={l:56,r:22,t:38,b:52},pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
+  ctx.fillStyle='rgba(201,123,85,0.04)';ctx.fillRect(pad.l,pad.t+ph*.45,pw*.7,ph-(ph*.45));
+  ctx.fillStyle='rgba(78,123,111,0.04)';ctx.fillRect(pad.l+pw*.7,pad.t,pw*.3,ph*.45);
+  [0,20,40,60,80,100].forEach(v=>{
+    const x=pad.l+(v/100)*pw;gs();ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+ph);ctx.stroke();
+    ls();ctx.textAlign='center';ctx.fillText(v+'%',x,pad.t+ph+15);
+  });
+  [0,1,2,3,4].forEach(v=>{
+    const y=pad.t+ph-(v/4)*ph;gs();ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+pw,y);ctx.stroke();
+    ls();ctx.textAlign='right';ctx.fillText(v+'h',pad.l-5,y+3);
+  });
+  ctx.strokeStyle=C.mist;ctx.lineWidth=1;ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(pad.l+pw*.7,pad.t);ctx.lineTo(pad.l+pw*.7,pad.t+ph);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(pad.l,pad.t+ph*.45);ctx.lineTo(pad.l+pw,pad.t+ph*.45);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=C.moss;ctx.font='600 10px Inter,sans-serif';ctx.textAlign='left';
+  ctx.fillText('Smartphone penetration vs. passive digital leisure · Ring = active leisure hrs',pad.l,pad.t-14);
+  ctx.font='bold 9px Inter,sans-serif';ctx.fillStyle=C.clay+'88';ctx.textAlign='left';ctx.fillText('HIGH PASSIVE',pad.l+8,pad.t+ph-10);
+  ctx.fillStyle=C.moss+'88';ctx.textAlign='right';ctx.fillText('LOWER PASSIVE',pad.l+pw-4,pad.t+18);
+  ls();ctx.textAlign='center';ctx.fillText('Smartphone penetration →',pad.l+pw/2,pad.t+ph+36);
+  ctx.save();ctx.translate(14,pad.t+ph/2);ctx.rotate(-Math.PI/2);ctx.fillText('Passive digital (h/day) →',0,0);ctx.restore();
+  L.points.forEach((p,i)=>{
+    const x=pad.l+(p.x/100)*pw,y=pad.t+ph-(p.y/4)*ph,r=6+p.active*3.4,isH=hovIdx===i;
+    const g2=ctx.createRadialGradient(x,y,0,x,y,r);
+    g2.addColorStop(0,'rgba(78,123,111,0.22)');g2.addColorStop(1,'rgba(78,123,111,0.06)');
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=g2;ctx.fill();
+    ctx.beginPath();ctx.arc(x,y,r*.52,0,Math.PI*2);ctx.fillStyle=isH?C.terracotta:C.terracotta+'cc';ctx.fill();
+    ctx.font=`${isH?'600 ':''}9px Inter,sans-serif`;ctx.fillStyle=isH?C.ink:C.slate;
+    ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(p.label,x,y-r-2);ctx.textBaseline='alphabetic';
+    hitBoxes.push({x:x-r,y:y-r,w:r*2,h:r*2,idx:i,name:p.label,
+      rows:[['Smartphone',p.x+'%'],['Passive digital',p.y+'h/day'],['Active leisure',p.active+'h/day']],
+      insight:p.context,src:p.src});
+  });
+}
+
+function drawSlope(L){
+  const pad={l:114,r:114,t:40,b:48},pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
+  const lx=pad.l,rx=pad.l+pw,maxH=8;
+  ctx.fillStyle=C.moss;ctx.font='600 10px Inter,sans-serif';ctx.textAlign='center';
+  ctx.fillText('Weekday',lx,pad.t-16);ctx.fillText('Weekend',rx,pad.t-16);
+  gs();ctx.beginPath();ctx.moveTo(lx,pad.t);ctx.lineTo(lx,pad.t+ph);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(rx,pad.t);ctx.lineTo(rx,pad.t+ph);ctx.stroke();
+  [0,2,4,6,8].forEach(v=>{
+    const y=pad.t+ph-(v/maxH)*ph;gs();ctx.beginPath();ctx.moveTo(pad.l-6,y);ctx.lineTo(rx+6,y);ctx.stroke();
+    ls();ctx.textAlign='right';ctx.fillText(v+'h',pad.l-10,y+3);
+  });
+  ctx.fillStyle=C.clay;ctx.font='600 10px Inter,sans-serif';ctx.textAlign='left';
+  ctx.fillText('Weekday vs. Weekend leisure by employment & income — BLS ATUS 2024',pad.l,pad.t-28);
+  L.groups.forEach((g,i)=>{
+    const ly=pad.t+ph-(g.weekday/maxH)*ph,ry=pad.t+ph-(g.weekend/maxH)*ph,isH=hovIdx===i;
+    ctx.strokeStyle=isH?g.color:g.color+'88';ctx.lineWidth=isH?2.5:1.5;
+    ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(rx,ry);ctx.stroke();
+    [[lx,ly],[rx,ry]].forEach(([x,y2])=>{
+      ctx.beginPath();ctx.arc(x,y2,isH?7:5,0,Math.PI*2);ctx.fillStyle=isH?g.color:g.color+'cc';ctx.fill();
+      hitBoxes.push({x:x-8,y:y2-8,w:16,h:16,idx:i,name:g.label,
+        rows:[['Weekday',g.weekday+'h'],['Weekend',g.weekend+'h'],['TV (wd)',g.tv_wd+'h'],['TV (we)',g.tv_we+'h']],
+        insight:g.insight,src:'BLS ATUS 2024'});
+    });
+    ctx.font=`${isH?'600 ':''}9px Inter,sans-serif`;ctx.fillStyle=isH?g.color:C.slate;
+    ctx.textAlign='right';ctx.fillText(g.label,lx-12,ly+3);ctx.fillText(g.weekday+'h',lx-12,ly+12);
+    ctx.textAlign='left';ctx.fillText(g.weekend+'h',rx+12,ry+3);
+    ctx.fillStyle=C.sage;ctx.font='8px Inter,sans-serif';ctx.fillText(`TV:${Math.round(g.tv_wd/g.weekday*100)}%`,rx+12,ry+11);
+  });
+  ls();ctx.textAlign='center';ctx.fillText('Steeper slope = more leisure confined to weekends.',W/2,pad.t+ph+30);
+}
+
+function drawWorldBar(L){
+  const pad={l:148,r:26,t:38,b:36},pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
+  const rows=L.regions,rH=ph/rows.length,maxM=400;
+  ctx.fillStyle=C.moss;ctx.font='600 10px Inter,sans-serif';ctx.textAlign='left';
+  ctx.fillText('Daily leisure minutes · Terracotta = TV/passive · Sage = active · ✦ = structured weekly rest',pad.l,pad.t-14);
+  rows.forEach((r,i)=>{
+    const ry=pad.t+i*rH,bh=Math.min(rH*.55,17),by=ry+(rH-bh)/2;
+    const bw=(r.mins/maxM)*pw,isH=hovIdx===i;
+    ctx.fillStyle=isH?r.color+'dd':r.color+'55';
+    if(ctx.roundRect){ctx.beginPath();ctx.roundRect(pad.l,by,bw,bh,3);ctx.fill()}else ctx.fillRect(pad.l,by,bw,bh);
+    const actW=bw*r.active/100,tvW=bw*r.tv/100;
+    ctx.fillStyle=C.sage+(isH?'cc':'44');
+    if(ctx.roundRect){ctx.beginPath();ctx.roundRect(pad.l+tvW,by,actW,bh,[0,3,3,0]);ctx.fill()}else ctx.fillRect(pad.l+tvW,by,actW,bh);
+    if(isH){ctx.strokeStyle=r.color;ctx.lineWidth=1.5;if(ctx.roundRect){ctx.beginPath();ctx.roundRect(pad.l,by,bw,bh,3);ctx.stroke()}else ctx.strokeRect(pad.l,by,bw,bh)}
+    ctx.font=`${isH?'600 ':''}9px Inter,sans-serif`;ctx.fillStyle=isH?C.ink:C.slate;
+    ctx.textAlign='right';ctx.fillText(r.label,pad.l-5,by+bh*.67);
+    ctx.textAlign='left';ctx.fillStyle=isH?r.color:C.moss;ctx.fillText(r.mins+'min',pad.l+bw+5,by+bh*.67);
+    if(r.rest.includes('Strong')){ctx.fillStyle=C.terracotta;ctx.font='9px Inter,sans-serif';ctx.fillText('✦',pad.l+bw+42,by+bh*.67)}
+    hitBoxes.push({x:pad.l,y:by,w:bw,h:bh,idx:i,name:r.label,
+      rows:[['Daily leisure',r.mins+'min'],['TV',r.tv+'%'],['Active',r.active+'%'],['Rest',r.rest]],
+      insight:r.insight,src:r.src});
+  });
+  const ly=pad.t+ph+14;
+  ctx.fillStyle=C.terracotta+'66';ctx.fillRect(pad.l,ly-7,18,7);
+  ls();ctx.textAlign='left';ctx.fillText('TV/passive',pad.l+22,ly);
+  ctx.fillStyle=C.sage+'66';ctx.fillRect(pad.l+96,ly-7,18,7);ctx.fillText('Active',pad.l+118,ly);
+  ctx.fillStyle=C.terracotta;ctx.font='10px Inter,sans-serif';ctx.fillText('✦',pad.l+200,ly);
+  ls();ctx.fillText('= structured weekly rest',pad.l+213,ly);
+}
+
+function getHit(mx,my){for(let h of hitBoxes)if(mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h)return h;return null}
+function initHover(){
+  cv.addEventListener('mousemove',e=>{
+    const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+    const hit=getHit(mx,my),ni=hit?hit.idx:-1;
+    if(ni!==hovIdx){hovIdx=ni;render()}
+    const tt=document.getElementById('tt');
+    if(hit){
+      document.getElementById('tt-n').textContent=hit.name;
+      document.getElementById('tt-r').innerHTML=hit.rows.map(r=>`<div>${r[0]}<span>${r[1]}</span></div>`).join('');
+      document.getElementById('tt-i').textContent=hit.insight;
+      document.getElementById('tt-s').textContent='Source: '+hit.src;
+      tt.style.opacity='1';
+      tt.style.left=Math.min(e.clientX+14,window.innerWidth-260)+'px';
+      tt.style.top=Math.max(e.clientY-44,8)+'px';
+    }else tt.style.opacity='0';
+  });
+  cv.addEventListener('mouseleave',()=>{hovIdx=-1;render();document.getElementById('tt').style.opacity='0'});
+}
+
+document.addEventListener('DOMContentLoaded',()=>{init();initHover()});
 </script>
 </body>
 </html>

@@ -3,103 +3,189 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Inversion</title>
+<title>The Inversion — Intentional Leisure</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+:root {
+  --cream:#F6EFE4; --sand:#E2D0B8; --terracotta:#C97B55; --clay:#A85C3A;
+  --sage:#7BA899; --moss:#4E7B6F; --slate:#3D5A6C; --ink:#1E2D3A;
+  --mist:#D8E6E2; --blush:#F0D9CC;
+  --serif:'Lora','Georgia',serif; --sans:'Inter','Helvetica Neue',sans-serif;
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0f;color:#e8e4df;font-family:'Inter',sans-serif;overflow-x:hidden}
+body{background:var(--cream);color:var(--ink);font-family:var(--sans);overflow-x:hidden}
 canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(circle,rgba(123,168,153,0.12) 1px,transparent 1px);
+  background-size:28px 28px;
+}
 .scroll-container{position:relative;z-index:2;pointer-events:none}
 .section{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
-.text-block{max-width:640px;text-align:center;opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .8s ease;pointer-events:auto}
+.section-intro{min-height:100vh}.section-enjoy{min-height:130vh}
+.section-transition{min-height:80vh}.section-reality{min-height:130vh}
+.section-gap{min-height:100vh}.section-close{min-height:100vh}
+
+/* ── TEXT BLOCK — no card, no shadow, uses a thin ruled underline + sage color ── */
+.text-block{
+  max-width:560px;text-align:center;
+  opacity:0;transform:translateY(24px);
+  transition:opacity .8s ease,transform .8s ease;
+  pointer-events:auto;
+  padding:1.2rem 0;
+}
 .text-block.visible{opacity:1;transform:translateY(0)}
-.text-block h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:400;line-height:1.2;margin-bottom:1.2rem;color:#fff}
-.text-block h1 em{font-style:italic;color:#f59e0b}
-.text-block p{font-size:clamp(.9rem,2vw,1.1rem);line-height:1.7;color:#a09b94;font-weight:300}
-.text-block .source{font-size:.75rem;color:#5a5650;margin-top:1rem;font-style:italic}
-.text-block .stat{font-family:'Playfair Display',serif;font-size:clamp(2.5rem,6vw,4.5rem);color:#f59e0b;font-weight:700;display:block;margin:.5rem 0}
-.section-intro{min-height:100vh}
-.section-enjoy{min-height:130vh}
-.section-transition{min-height:80vh}
-.section-reality{min-height:130vh}
-.section-gap{min-height:100vh}
-.section-close{min-height:100vh}
+
+/* Thin horizon line above each text block — the motif acts as a readable anchor */
+.text-block::before{
+  content:'';display:block;margin:0 auto 1.2rem;
+  width:48px;height:2px;background:var(--terracotta);border-radius:1px;opacity:.7;
+}
+
+.text-block h1{
+  font-family:var(--serif);font-size:clamp(1.8rem,4.5vw,3rem);
+  font-weight:700;line-height:1.25;margin-bottom:1rem;
+  color:var(--slate);
+  /* Legibility: a very subtle warm band painted behind text via paint-order stroke */
+  -webkit-text-stroke:5px var(--cream);paint-order:stroke fill;
+}
+.text-block h1 em{font-style:italic;color:var(--terracotta);-webkit-text-stroke:4px var(--cream)}
+.text-block p{
+  font-size:clamp(.88rem,1.8vw,1.02rem);line-height:1.78;
+  color:var(--ink);font-weight:400;
+  -webkit-text-stroke:3px var(--cream);paint-order:stroke fill;
+}
+.text-block p strong{-webkit-text-stroke:3px var(--cream)}
+.text-block .source{
+  font-size:.68rem;color:var(--moss);margin-top:1rem;font-style:italic;
+  font-family:var(--sans);display:inline-block;
+  border-bottom:1px solid var(--sage);padding-bottom:2px;
+  -webkit-text-stroke:2px var(--cream);paint-order:stroke fill;
+}
+.text-block .stat{
+  font-family:var(--serif);font-size:clamp(2.6rem,6.5vw,4.8rem);
+  color:var(--terracotta);font-weight:700;display:block;margin:.3rem 0;
+  -webkit-text-stroke:6px var(--cream);paint-order:stroke fill;
+}
 
 /* ── ONBOARDING ── */
-#onboarding{position:fixed;inset:0;background:#0a0a0f;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center}
-#onboarding h2{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.8rem);color:#fff;margin-bottom:.8rem}
-#onboarding h2 em{color:#f59e0b;font-style:italic}
-#onboarding .ob-sub{font-size:1rem;color:#a09b94;max-width:520px;line-height:1.7;margin-bottom:1.6rem}
-.dot-key{display:flex;align-items:center;gap:1.2rem;justify-content:center;margin-bottom:1.8rem;flex-wrap:wrap}
+#onboarding{
+  position:fixed;inset:0;background:var(--cream);z-index:100;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:2rem;text-align:center;
+}
+#onboarding::before{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:320px;height:72px;border-bottom:1.5px solid var(--sand);
+  border-radius:0 0 160px 160px;opacity:.5;
+}
+#onboarding h2{
+  font-family:var(--serif);font-size:clamp(1.6rem,3.5vw,2.6rem);
+  color:var(--slate);margin-bottom:.8rem;font-weight:700;line-height:1.25;
+}
+#onboarding h2 em{color:var(--terracotta);font-style:italic}
+#onboarding .ob-sub{font-size:.95rem;color:var(--ink);max-width:500px;line-height:1.8;margin-bottom:1.6rem;opacity:.8}
+.dot-key{display:flex;align-items:center;gap:1rem;justify-content:center;margin-bottom:1.6rem;flex-wrap:wrap}
 .dot-demo{display:flex;flex-direction:column;align-items:center;gap:.4rem}
 .dot-demo .d{border-radius:50%}
-.dot-demo span{font-size:.68rem;color:#7a756e;text-align:center;max-width:72px;line-height:1.3}
-.ob-note{font-size:.78rem;color:#4a4640;margin-bottom:1.8rem;max-width:480px;line-height:1.6}
-.ob-btn{padding:12px 32px;background:#f59e0b;color:#0a0a0f;border:none;border-radius:40px;font-size:.85rem;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:opacity .15s}
-.ob-btn:hover{opacity:.85}
+.dot-demo span{font-size:.66rem;color:var(--slate);text-align:center;max-width:70px;line-height:1.3;font-family:var(--sans)}
+.ob-note{
+  font-size:.76rem;color:var(--clay);margin-bottom:1.6rem;
+  max-width:460px;line-height:1.65;font-family:var(--sans);
+  background:var(--blush);padding:10px 16px;border-radius:12px;
+}
+.ob-btn{
+  padding:11px 34px;background:var(--terracotta);color:var(--cream);
+  border:none;border-radius:40px;font-size:.86rem;font-weight:600;
+  cursor:pointer;letter-spacing:.04em;font-family:var(--sans);
+  transition:background .2s;
+}
+.ob-btn:hover{background:var(--clay)}
 
-/* ── GROUP DROPDOWN ── */
+/* ── GROUP PICKER ── */
 #group-picker{
   position:fixed;top:1rem;right:1rem;z-index:10;
   display:none;flex-direction:column;align-items:flex-end;gap:4px;
 }
-#group-picker label{font-size:.62rem;color:#4a4640;text-transform:uppercase;letter-spacing:.1em}
+#group-picker label{font-size:.6rem;color:var(--moss);text-transform:uppercase;letter-spacing:.12em;font-family:var(--sans)}
 #group-select{
-  appearance:none;background:#12121a;color:#e8e4df;
-  border:1px solid #2a2828;border-radius:8px;
-  padding:8px 36px 8px 12px;font-size:.78rem;font-family:'Inter',sans-serif;
-  cursor:pointer;min-width:200px;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  appearance:none;background:rgba(246,239,228,0.95);color:var(--ink);
+  border:1.5px solid var(--sand);border-radius:10px;padding:8px 36px 8px 14px;
+  font-size:.76rem;font-family:var(--sans);cursor:pointer;min-width:210px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237BA899' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 12px center;
 }
-#group-select:focus{outline:1px solid #f59e0b44}
-#group-select optgroup{background:#12121a;color:#7a756e;font-size:.72rem}
-#group-select option{background:#12121a;color:#e8e4df}
+#group-select:focus{outline:2px solid var(--sage);outline-offset:2px}
+#group-select optgroup{background:var(--cream);color:var(--sage);font-size:.7rem}
+#group-select option{background:var(--cream);color:var(--ink)}
 
-/* ── CONTEXT BADGE (replaces plain source badge) ── */
+/* ── CONTEXT BADGE ── */
 #ctx-badge{
   position:fixed;bottom:1rem;right:1rem;z-index:10;
-  font-size:.65rem;color:#3a3630;text-align:right;line-height:1.5;
-  max-width:300px;pointer-events:none;transition:opacity .4s;
+  font-size:.64rem;color:var(--moss);text-align:right;line-height:1.6;
+  max-width:290px;pointer-events:none;font-family:var(--sans);
 }
-#ctx-badge strong{color:#5a5650}
-#ctx-badge .ctx-insight{color:#4a4640;font-style:italic;margin-top:3px;display:block}
+#ctx-badge strong{color:var(--slate);display:block;margin-bottom:1px}
+#ctx-badge .ctx-insight{color:var(--clay);font-style:italic;font-size:.62rem}
 
-/* ── EXISTING PERSISTENT UI ── */
-.legend{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;z-index:3;opacity:0;transition:opacity .6s ease;font-size:.7rem;pointer-events:none}
+/* ── LEGEND ── */
+.legend{
+  position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
+  display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center;
+  z-index:3;opacity:0;transition:opacity .6s ease;font-size:.68rem;
+  pointer-events:none;
+}
 .legend.visible{opacity:1}
-.legend-item{display:flex;align-items:center;gap:5px;color:#7a756e}
-.legend-dot{width:8px;height:8px;border-radius:50%}
-.labels-container{position:fixed;bottom:3.5rem;left:0;right:0;display:flex;justify-content:center;gap:0;z-index:3;opacity:0;transition:opacity .6s ease;pointer-events:none}
+.legend-item{display:flex;align-items:center;gap:5px;color:var(--slate);font-family:var(--sans)}
+/* Small label pill — minimal, ink-on-cream, no card */
+.legend-item span.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ── COLUMN LABELS ── */
+.labels-container{
+  position:fixed;bottom:5rem;left:0;right:0;display:flex;
+  justify-content:center;z-index:3;opacity:0;transition:opacity .6s ease;pointer-events:none;
+}
 .labels-container.visible{opacity:1}
-.col-label{text-align:center;font-size:.65rem;color:#5a5650;line-height:1.3;transition:color .3s}
-.col-label .time-val{display:block;font-size:.8rem;font-weight:600;margin-top:2px;color:#a09b94}
-.scroll-hint{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:4;opacity:0;transition:opacity .5s;font-size:.75rem;color:#5a5650;letter-spacing:.15em;text-transform:uppercase;animation:bobDown 2s ease-in-out infinite}
+.col-label{
+  text-align:center;font-size:.6rem;color:var(--slate);line-height:1.3;
+  font-family:var(--sans);-webkit-text-stroke:2px var(--cream);paint-order:stroke fill;
+}
+.col-label .time-val{
+  display:block;font-size:.76rem;font-weight:600;margin-top:2px;color:var(--moss);
+  -webkit-text-stroke:2px var(--cream);paint-order:stroke fill;
+}
+
+/* ── SCROLL HINT ── */
+.scroll-hint{
+  position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);
+  z-index:4;opacity:0;transition:opacity .5s;font-size:.72rem;
+  color:var(--sage);letter-spacing:.15em;text-transform:uppercase;
+  animation:bobDown 2s ease-in-out infinite;font-family:var(--sans);
+  -webkit-text-stroke:2px var(--cream);paint-order:stroke fill;
+}
 .scroll-hint.visible{opacity:1}
 @keyframes bobDown{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
 </style>
 </head>
 <body>
 
-<!-- ONBOARDING -->
 <div id="onboarding">
   <h2>Each dot is <em>one minute</em><br>of someone's evening.</h2>
-  <p class="ob-sub">300 dots. A 5-hour window of free time. Watch them rearrange between what people <strong style="color:#e8e4df">enjoy</strong> and what they <strong style="color:#e8e4df">actually do</strong>.</p>
+  <p class="ob-sub">300 dots. A 5-hour window of free time. Watch them rearrange between what people <strong>enjoy</strong> and what they <strong>actually do</strong>.</p>
   <div class="dot-key">
     <div class="dot-demo"><div class="d" style="width:8px;height:8px;background:#6366f1"></div><span>TV & Streaming</span></div>
-    <div class="dot-demo"><div class="d" style="width:8px;height:8px;background:#f59e0b"></div><span>Socializing</span></div>
-    <div class="dot-demo"><div class="d" style="width:8px;height:8px;background:#10b981"></div><span>Games</span></div>
+    <div class="dot-demo"><div class="d" style="width:8px;height:8px;background:#C97B55"></div><span>Socializing</span></div>
+    <div class="dot-demo"><div class="d" style="width:8px;height:8px;background:#4E7B6F"></div><span>Games</span></div>
     <div class="dot-demo"><div class="d" style="width:8px;height:8px;background:#ef4444"></div><span>Sports</span></div>
-    <div class="dot-demo"><div class="d" style="width:8px;height:8px;background:#8b5cf6"></div><span>Reading</span></div>
+    <div class="dot-demo"><div class="d" style="width:8px;height:8px;background:#7BA899"></div><span>Reading</span></div>
     <div class="dot-demo"><div class="d" style="width:8px;height:8px;background:#ec4899"></div><span>Hobbies</span></div>
     <div class="dot-demo"><div class="d" style="width:8px;height:8px;background:#94a3b8"></div><span>Relaxing</span></div>
-    <div class="dot-demo"><div class="d" style="width:8px;height:8px;background:#06b6d4"></div><span>Arts & Music</span></div>
+    <div class="dot-demo"><div class="d" style="width:8px;height:8px;background:#A85C3A"></div><span>Arts & Music</span></div>
   </div>
-  <p class="ob-note">Use the <strong style="color:#7a756e">dropdown (top right)</strong> to switch whose evening you're watching — by age group, country, income level, or technology access. All data from real national time-use surveys.</p>
+  <p class="ob-note">Use the <strong>dropdown (top right)</strong> to switch whose evening you're watching — by age, country, income, or life stage.</p>
   <button class="ob-btn" id="startBtn">Start exploring ↓</button>
 </div>
 
-<!-- GROUP PICKER -->
 <div id="group-picker">
   <label>Whose evening?</label>
   <select id="group-select">
@@ -107,71 +193,76 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1}
       <option value="us_avg">🌐 Average adult (US, BLS 2024)</option>
     </optgroup>
     <optgroup label="── Age & Life Stage ──">
-      <option value="age_teen">🕐 Teens 15–19 (US, BLS 2024)</option>
-      <option value="age_young">🕐 Young adults 20–34 (US, BLS 2024)</option>
-      <option value="age_parent">🕐 Parents 35–44 (US, BLS 2024)</option>
-      <option value="age_midlife">🕐 Mid-life 45–64 (US, BLS 2024)</option>
-      <option value="age_retired">🕐 Retired 65+ (US, BLS 2024)</option>
+      <option value="age_teen">🕐 Teens 15–19 (BLS 2024)</option>
+      <option value="age_student">🎓 University student 18–24</option>
+      <option value="age_young">🕐 Young adults 25–34 (BLS 2024)</option>
+      <option value="age_parent">🕐 Parents 35–44 (US/AUS)</option>
+      <option value="age_midlife">🕐 Mid-life 45–64 (BLS 2024)</option>
+      <option value="age_retired">🕐 Retired 65–74 (BLS 2024)</option>
+      <option value="age_elderly">🕐 Elderly 75+ (BLS 2024)</option>
     </optgroup>
     <optgroup label="── Region & Culture ──">
       <option value="region_norway">🇳🇴 Norway (OECD 2024)</option>
-      <option value="region_uk">🇬🇧 United Kingdom (Ofcom / ONS 2024)</option>
+      <option value="region_uk">🇬🇧 United Kingdom (Ofcom 2025)</option>
       <option value="region_australia">🇦🇺 Australia (ABS 2024)</option>
       <option value="region_japan">🇯🇵 Japan (Statistics Bureau 2021)</option>
-      <option value="region_mexico">🇲🇽 Mexico (OECD / Our World in Data)</option>
+      <option value="region_southkorea">🇰🇷 South Korea (OECD)</option>
+      <option value="region_mexico">🇲🇽 Mexico (OECD)</option>
+      <option value="region_brazil">🇧🇷 Brazil (DataReportal 2024)</option>
       <option value="region_india">🇮🇳 India (India TUS 2024)</option>
-      <option value="region_nigeria">🇳🇬 Nigeria (GSMA / DataReportal 2024)</option>
-      <option value="region_sabbath">✦ Shabbat observer (Pew / My Jewish Learning)</option>
+      <option value="region_nigeria">🇳🇬 Nigeria (GSMA 2024)</option>
+      <option value="region_sabbath">✦ Shabbat observer</option>
+      <option value="region_jumuah">☽ Jumu'ah observer</option>
     </optgroup>
     <optgroup label="── Career & Income ──">
-      <option value="career_ft">💼 Full-time worker (US, BLS 2024)</option>
-      <option value="career_lowwage">💼 Low-wage worker &lt;$840/wk (US, BLS 2024)</option>
-      <option value="career_highwage">💼 High-wage worker $1,971+/wk (US, BLS 2024)</option>
-      <option value="career_unemployed">💼 Not employed (US, BLS 2024)</option>
-      <option value="career_nodegree">💼 No HS diploma (US, BLS 2024)</option>
-      <option value="career_degree">💼 Bachelor's degree+ (US, BLS 2024)</option>
+      <option value="career_ft">💼 Full-time worker (BLS 2024)</option>
+      <option value="career_lowwage">💼 Low-wage &lt;$840/wk (BLS 2024)</option>
+      <option value="career_highwage">💼 High-wage $1,971+/wk (BLS 2024)</option>
+      <option value="career_unemployed">💼 Not employed (BLS 2024)</option>
+      <option value="career_nodegree">💼 No HS diploma (BLS 2024)</option>
+      <option value="career_degree">💼 Bachelor's degree+ (BLS 2024)</option>
+      <option value="career_gig">💼 Gig / precarious worker</option>
     </optgroup>
     <optgroup label="── Technology Access ──">
-      <option value="tech_highpenetration">📱 High smartphone access (Ofcom / Pew 2024)</option>
-      <option value="tech_mobilefirst">📱 Mobile-first (developing economy, GSMA 2024)</option>
-      <option value="tech_lowtech">📱 Low tech access (GSMA / India TUS 2024)</option>
+      <option value="tech_high">📱 High smartphone access</option>
+      <option value="tech_mobile">📱 Mobile-first economy</option>
+      <option value="tech_low">📱 Low tech access</option>
     </optgroup>
   </select>
 </div>
 
-<!-- SOURCE / CONTEXT BADGE -->
 <div id="ctx-badge"></div>
-
 <canvas id="c"></canvas>
+
 <div class="scroll-container">
   <div class="section section-intro" data-scene="0">
     <div class="text-block" id="tb0">
       <h1>We know what makes us <em>feel alive</em></h1>
       <p>When asked to rate how much they enjoy different activities, people consistently rank sports, hobbies, socializing, and creative pursuits at the top.</p>
       <p style="margin-top:.8rem">Yet evening after evening, most leisure hours flow somewhere else entirely.</p>
-      <span class="source">UK Time Use Survey 2014–15 · U.S. Bureau of Labor Statistics ATUS 2024<br>Use the <strong style="color:#7a756e">dropdown (top right)</strong> to see a different person's evening</span>
+      <span class="source">UK Time Use Survey 2014–15 · U.S. Bureau of Labor Statistics ATUS 2024</span>
     </div>
   </div>
   <div class="section section-enjoy" data-scene="1">
     <div class="text-block" id="tb1">
       <h1>If enjoyment <em>guided</em> our choices</h1>
-      <p>Each dot is <strong style="color:#e8e4df">one minute</strong>. Here the 300 dots are distributed by how much this person enjoys each activity.</p>
-      <p style="margin-top:.8rem">The spread is nearly even — because enjoyment ratings are surprisingly similar across active and passive leisure.</p>
-      <span class="source" id="src1">Enjoyment scale: 1–7 · UK Time Use Survey 2014–15 via Our World in Data</span>
+      <p>Each dot is <strong>one minute</strong>. Distributed here by how much this person enjoys each activity.</p>
+      <p style="margin-top:.8rem">The spread is nearly even — enjoyment ratings are surprisingly similar across active and passive leisure.</p>
+      <span class="source" id="src1">Enjoyment 1–7 · UK Time Use Survey 2014–15</span>
     </div>
   </div>
   <div class="section section-transition" data-scene="2">
     <div class="text-block" id="tb2">
       <h1>Now watch what <em>actually</em> happens</h1>
-      <p>Same 300 minutes. Same evening. But now arranged by how this person actually spends their time.</p>
+      <p>Same 300 minutes. Same evening. Now arranged by how this person actually spends their time.</p>
     </div>
   </div>
   <div class="section section-reality" data-scene="3">
     <div class="text-block" id="tb3">
       <h1><span class="stat" id="stat-pct">55%</span></h1>
-      <p id="reality-body">of the average evening is consumed by TV and streaming — the activity rated <em>less enjoyable</em> than almost every alternative.</p>
-      <p style="margin-top:.8rem" id="reality-body2">Sports, hobbies, and arts — the highest-rated experiences — share just 12% of the time between them.</p>
-      <span class="source" id="src3">Time allocation: BLS American Time Use Survey 2024</span>
+      <p id="reality-body">of the average evening is consumed by TV and streaming — rated <em>less enjoyable</em> than almost every alternative.</p>
+      <p style="margin-top:.7rem" id="reality-body2">Sports, hobbies, and arts share just 12% of the time, despite being rated most enjoyable.</p>
+      <span class="source" id="src3">BLS American Time Use Survey 2024</span>
     </div>
   </div>
   <div class="section section-gap" data-scene="4">
@@ -179,14 +270,14 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1}
       <h1>The <em>intention–action</em> gap</h1>
       <p id="gap-quote">"High-flow activities require more initial motivation because they require skill and concentration. In other words, high-flow activities are work — but work that pays off."</p>
       <p style="margin-top:.8rem">The friction isn't in the enjoyment. It's in the <em>starting</em>.</p>
-      <span class="source">Csikszentmihalyi & LeFevre, 1989 · Flow: The Psychology of Optimal Experience</span>
+      <span class="source">Csikszentmihalyi & LeFevre, 1989 · Flow</span>
     </div>
   </div>
   <div class="section section-close" data-scene="5">
     <div class="text-block" id="tb5">
       <h1>Every dot is a <em>minute</em> you could reclaim</h1>
-      <p id="close-body">Compulsive phone use may be a sign of an underdeveloped leisure life — not the cause. The answer may not be more willpower, but a <em>Leisure Menu</em>: pre-selected activities ready for the moment energy is low.</p>
-      <span class="source">Research: Intentional Leisure & the Friction Gap, 2025 · Feifey & Yuxuan</span>
+      <p id="close-body">Compulsive phone use may signal an underdeveloped leisure life — not the cause. The answer may not be more willpower, but a Leisure Menu: pre-selected activities ready for when energy is low.</p>
+      <span class="source">Intentional Leisure & the Friction Gap, 2025 · Feifey & Yuxuan</span>
     </div>
   </div>
 </div>
@@ -196,749 +287,226 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1}
 <div class="scroll-hint" id="scrollHint">Scroll to explore ↓</div>
 
 <script>
-// ══════════════════════════════════════════════════════════════
-// ALL GROUP DATA
-// Each group defines: activities[] with hours (real-time allocation)
-// Enjoyment stays constant (UK TUS) — that's the point of the viz
-// tvPct, insight, source, gapQuote, closeCopy are narrative overrides
-// ══════════════════════════════════════════════════════════════
-const GROUPS = {
+const VS={terracotta:'#C97B55',clay:'#A85C3A',sage:'#7BA899',moss:'#4E7B6F',slate:'#3D5A6C',ink:'#1E2D3A',blush:'#F0D9CC',mist:'#D8E6E2'};
 
-  us_avg: {
-    label: 'Average US adult',
-    tvPct: 55, tvMinPct: 12,
-    source: 'BLS American Time Use Survey 2024',
-    insight: 'The default — 2.8h TV, 0.3h sports.',
-    gapQuote: '"High-flow activities require more initial motivation because they require skill and concentration. In other words, high-flow activities are work — but work that pays off."',
-    closeCopy: 'Compulsive phone use may be a sign of an underdeveloped leisure life — not the cause. The answer may not be more willpower, but a Leisure Menu: pre-selected activities ready for the moment energy is low.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:2.80, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.60, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.50, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.30, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.30, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.20, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.30, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.10, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  // ── AGE GROUPS (BLS ATUS 2024 weekday data) ──
-  age_teen: {
-    label: 'Teens 15–19 (US)',
-    tvPct: 39, tvMinPct: 38,
-    source: 'BLS ATUS 2024 · ABS 2024 (AUS cross-ref: 33% of males 15–24 game daily)',
-    insight: 'Teens game the most (1.24h/day) but sports is also highest of any age group (0.65h). TV lower than older adults.',
-    gapQuote: '"In adolescence, leisure identity is still forming — screens offer identity proxies when self-directed activity feels uncertain."',
-    closeCopy: 'For teens, the friction gap is about identity as much as energy. Pre-selecting activities that feel "cool" or social lowers the barrier.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:1.90, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.46, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:1.24, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.65, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.05, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.20, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.14, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.29, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  age_young: {
-    label: 'Young adults 20–34 (US)',
-    tvPct: 43, tvMinPct: 10,
-    source: 'BLS ATUS 2024 (20–24: 4.20h leisure · 25–34: 3.64h leisure)',
-    insight: 'Least free time begins here. 25–34s: only 3.64h/day. TV still dominant despite higher-rated alternatives.',
-    gapQuote: '"Young adults are navigating a new kind of time poverty — always-on work culture compressing the margins of life."',
-    closeCopy: 'For young adults, the friction gap is amplified by exhaustion. A Leisure Menu pre-matched to 20-minute windows could reclaim the "time confetti" between obligations.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:1.54, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.44, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.88, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.37, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.17, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.22, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.20, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.18, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  age_parent: {
-    label: 'Parents 35–44 (US)',
-    tvPct: 52, tvMinPct: 9,
-    source: 'BLS ATUS 2024 · ABS 2024 (49% of AUS women 35–44 "always rushed")',
-    insight: 'Leisure crunch is sharpest here. Only 3.15h/day. Children under 6: just 2.7h. TV default rises as energy depletes.',
-    gapQuote: '"When you have 45 minutes of free time after the kids are in bed, you don\'t choose — you just collapse into whatever\'s already on." — Reddit, r/Parenting',
-    closeCopy: 'Parents face the most acute friction gap. Time confetti — a 20-minute window here, 30 minutes there — never feels like "enough" to start something meaningful.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:1.65, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.36, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.30, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.21, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.14, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.15, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.20, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.09, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  age_midlife: {
-    label: 'Mid-life 45–64 (US)',
-    tvPct: 56, tvMinPct: 9,
-    source: 'BLS ATUS 2024 (45–54: 3.70h · 55–64: 4.88h leisure)',
-    insight: 'Leisure begins recovering as caregiving eases. But TV surges as the default — reaching 2.78h by 55–64.',
-    gapQuote: '"In midlife I have more evenings free than I did at 35 — but I spend more of them on the sofa. I\'m not sure when that happened." — Reddit, r/Adulting',
-    closeCopy: 'Midlife offers a window to rebuild intentional leisure habits — but without a prompt or structure, the passive default fills the space by inertia.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:2.32, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.46, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.30, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.25, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.26, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.22, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.40, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.16, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  age_retired: {
-    label: 'Retired 65+ (US)',
-    tvPct: 62, tvMinPct: 11,
-    source: 'BLS ATUS 2024 (65–74: 6.22h · 75+: 7.28h leisure/day)',
-    insight: 'Most free time of any group — but TV dominates at 4.39h/day for 75+. Reading doubles compared to younger adults.',
-    gapQuote: '"Retirement gave me time but took away the structure. I had more hours than I ever had — and less idea what to do with them." — r/Retirement',
-    closeCopy: 'Retirees have time but often lose the social scaffolding that used to fill it. Without structure, TV becomes a default companion rather than a choice.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:4.06, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.49, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.42, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.31, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.60, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.25, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.50, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.17, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  // ── REGION / CULTURE ──
-  region_norway: {
-    label: 'Norway',
-    tvPct: 42, tvMinPct: 32,
-    source: 'OECD Time Use Database · Our World in Data (Norway: 369min/day leisure)',
-    insight: '369 min/day — highest in OECD. Labour law protects free time. Hygge culture values intentional, domestic leisure. Active outdoor culture.',
-    gapQuote: '"Friluftsliv — time in nature — is not a hobby in Norway. It\'s a baseline expectation of how free time is spent."',
-    closeCopy: 'Norway shows that intentional leisure isn\'t just a personal skill — it\'s a structural outcome. Labour protections and cultural permission to rest remove the barrier before it forms.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:1.70, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.90, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.30, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.70, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.60, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.55, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.50, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.35, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  region_uk: {
-    label: 'United Kingdom',
-    tvPct: 48, tvMinPct: 18,
-    source: 'Ofcom Online Nation 2025 · ONS UK Time Use · Our World in Data',
-    insight: 'Ofcom 2025: UK adults spend avg 4h online/day, 60% on smartphone. Social media top activity for 16–24s. TV still dominant at 48%.',
-    gapQuote: '"I open my phone to check the time and it\'s an hour later." — Ofcom Online Nation 2025 qualitative data',
-    closeCopy: 'In the UK, smartphone-mediated passive leisure is the primary friction point — not TV. The always-on device makes the default constantly available.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:2.40, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.70, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.40, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.40, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.40, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.30, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.35, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.15, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  region_australia: {
-    label: 'Australia',
-    tvPct: 50, tvMinPct: 20,
-    source: 'Australian Bureau of Statistics Time Use 2024',
-    insight: 'ABS 2024: 5.5h free/day avg. TV/streaming: 62% participate, avg 2h 55min. Social media: 25% avg 1h 23min. 33% feel "always rushed".',
-    gapQuote: '"One-third of Australians always or often feel rushed or pressed for time." — ABS Time Use Survey 2024',
-    closeCopy: 'Despite more free time than the US, Australia shows the same TV default. Time stress — especially for parents — creates the same friction gap across cultures.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:2.55, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.65, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.45, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.45, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.35, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.28, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.35, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.12, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  region_japan: {
-    label: 'Japan',
-    tvPct: 48, tvMinPct: 10,
-    source: 'Japan Statistics Bureau Time Use Survey 2021 · Wikipedia Karoshi · OECD',
-    insight: 'Japan: 215min/day total leisure — one of lowest in OECD. Karoshi (death by overwork) culturally acknowledged. Nemui (sleep) often replaces all leisure.',
-    gapQuote: '"疲れすぎて、何もできない。" (Too exhausted to do anything.) — r/japanlife, translated',
-    closeCopy: 'In Japan, the friction gap is structural: overwork culture removes time before the question of enjoyment even arises. Design cannot solve this — labour reform must come first.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:1.70, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.35, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.30, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.20, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.25, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.20, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.45, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.10, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  region_mexico: {
-    label: 'Mexico',
-    tvPct: 41, tvMinPct: 24,
-    source: 'Our World in Data Time Use · OECD · DataReportal 2024',
-    insight: 'Only 172min/day leisure — compressed by informal long work hours. But social leisure (family, community, plaza culture) is more resilient than in individualistic cultures.',
-    gapQuote: '"En México el descanso es con familia, no con pantalla." (In Mexico, rest is with family, not a screen.) — research synthesis',
-    closeCopy: 'Mexico demonstrates that cultural values around social leisure can partially resist the passive default — even under economic pressure. Community is infrastructure.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:1.18, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.69, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.25, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.28, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.15, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.18, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.30, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.10, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  region_india: {
-    label: 'India',
-    tvPct: 38, tvMinPct: 18,
-    source: 'India Time Use Survey 2024 (microdata.gov.in) · PIB India 2024 · Pew Research 2019',
-    insight: 'India TUS 2024: huge variation by state, income, urban/rural. Rapid smartphone adoption creating new passive defaults without leisure infrastructure to support alternatives.',
-    gapQuote: '"Free time, when it comes, is rare. It feels like I should use it productively, not just... rest." — r/ABCDesis (South Asian diaspora community)',
-    closeCopy: 'In India, the guilt loop is compounded by cultural productivity pressure. Leisure itself carries stigma in contexts shaped by scarcity and hustle — making the friction gap psychological as well as material.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:1.50, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.65, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.28, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.30, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.22, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.20, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.42, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.12, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  region_nigeria: {
-    label: 'Nigeria',
-    tvPct: 25, tvMinPct: 35,
-    source: 'GSMA Mobile Economy Report 2024 · DataReportal Digital 2024',
-    insight: 'Mobile-first internet — many accessing the web for the first time via smartphone. Leisure is still predominantly social and community-based. TV default much lower.',
-    gapQuote: '"Community leisure doesn\'t require activation energy the way solo activities do — you\'re pulled in by the group, not pushing yourself."',
-    closeCopy: 'Nigeria shows that when community leisure is the default, the friction gap is smaller. The design challenge shifts: how do you preserve social leisure as smartphone defaults expand?',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:0.70, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:1.20, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.30, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.50, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.15, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.25, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.35, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.25, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  region_sabbath: {
-    label: 'Shabbat observer (Jewish)',
-    tvPct: 5, tvMinPct: 55,
-    source: 'Pew Research Religion & Wellbeing 2019 · My Jewish Learning · Psychology Today 2013',
-    insight: 'Shabbat provides 25 hours of tech-free, structured weekly rest. Research: Shabbat observers report lower anxiety and higher life satisfaction. Intentional leisure is institutionally protected.',
-    gapQuote: '"Shabbat is the practice of stopping. Not because you\'ve finished — but because rest itself has value." — My Jewish Learning',
-    closeCopy: 'Shabbat offers a design lesson: when rest is structurally protected — not negotiated each week — the friction gap disappears. You don\'t decide whether to rest. You rest.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:0.10, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:1.80, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.10, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.40, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:1.00, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.30, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.90, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.40, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  // ── CAREER / INCOME ──
-  career_ft: {
-    label: 'Full-time worker (US)',
-    tvPct: 50, tvMinPct: 10,
-    source: 'BLS ATUS 2024 — full-time workers weekday: 3.18h leisure',
-    insight: 'Weekday leisure compressed to 3.18h. Weekend doubles to 5.81h — leisure becomes weekend-only. TV is 50% of weekday free time.',
-    gapQuote: '"After a full day of work I don\'t want to decide anything. I just want to not think." — Reddit, r/povertyfinance',
-    closeCopy: 'For full-time workers, the friction gap peaks on weekday evenings — the exact time when passive defaults are strongest and cognitive resources are depleted.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:1.58, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.31, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.37, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.24, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.16, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.18, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.30, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.04, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  career_lowwage: {
-    label: 'Low-wage worker <$840/wk (US)',
-    tvPct: 56, tvMinPct: 8,
-    source: 'BLS ATUS 2024 — earnings quartile 1 (<$840/week)',
-    insight: 'Low-wage workers: TV = 56% of weekday leisure (1.81h out of 3.24h total). Cultural and physical leisure infrastructure is less accessible without income.',
-    gapQuote: '"What am I going to do — go to a concert? I can\'t afford that. So yeah, I\'m on my phone." — r/povertyfinance',
-    closeCopy: 'For low-income workers, the friction gap is compounded by cost. Many meaningful leisure activities require money, transport, or equipment that isn\'t available. The default is the default because everything else costs.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:1.81, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.31, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.42, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.13, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.09, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.12, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.29, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.07, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  career_highwage: {
-    label: 'High-wage worker $1,971+/wk (US)',
-    tvPct: 47, tvMinPct: 12,
-    source: 'BLS ATUS 2024 — earnings quartile 4 ($1,971+/week)',
-    insight: 'Highest earners have least total weekday leisure (3.09h) but higher-quality mix: more sport, reading, socializing. TV drops to 47%.',
-    gapQuote: '"I have the money and the time on paper — but I\'m so switched-on from work that I still just... scroll." — r/productivity',
-    closeCopy: 'High income doesn\'t solve the friction gap — it changes its shape. The barrier shifts from cost to cognitive depletion and always-on work culture.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:1.47, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.33, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.31, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.33, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.19, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.18, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.17, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.11, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  career_unemployed: {
-    label: 'Not employed (US)',
-    tvPct: 54, tvMinPct: 11,
-    source: 'BLS ATUS 2024 — not employed: 6.42h/day leisure',
-    insight: 'Most free time (6.42h/day) — but 54% is TV/streaming (3.45h). Without work structure, passive default fills unstructured time.',
-    gapQuote: '"I have all the time in the world. I\'ve never felt more stuck." — Reddit, r/povertyfinance',
-    closeCopy: 'Unemployment exposes a cruel irony: more free time doesn\'t automatically mean more meaningful leisure. Without structure, purpose, or social scaffolding, passive defaults expand to fill the space.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:3.45, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.59, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.71, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.40, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.46, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.30, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.46, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.05, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  career_nodegree: {
-    label: 'No HS diploma (US)',
-    tvPct: 56, tvMinPct: 8,
-    source: 'BLS ATUS 2024 — less than HS diploma: 5.02h weekday leisure',
-    insight: 'TV = 56% of leisure. Lower access to cultural/sport infrastructure. Reading very low (0.08h). More relaxing (0.91h) — possibly fatigue-driven.',
-    gapQuote: '"The library is free but you need a way to get there. The park is free but you need energy. The phone is always there." — r/povertyfinance',
-    closeCopy: 'Educational attainment correlates with leisure quality — not because of intellect, but because of access to infrastructure, time, and models of meaningful leisure.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:2.82, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.57, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.18, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.18, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.08, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.10, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.91, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.18, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  career_degree: {
-    label: "Bachelor's degree+ (US)",
-    tvPct: 48, tvMinPct: 15,
-    source: "BLS ATUS 2024 — Bachelor's degree and higher: 3.99h weekday leisure",
-    insight: 'Education flips the mix: more sports (0.32h), reading (0.41h), socializing. TV drops to 48%. Still the most common activity, but no longer crushingly dominant.',
-    gapQuote: '"Even with a degree and a good job, Friday night I\'m still just on Netflix. The friction is real for everyone." — r/Adulting',
-    closeCopy: 'Education shifts leisure patterns — but doesn\'t eliminate the friction gap. The inversion is smaller but still present: people still default below their stated enjoyment preferences.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:1.90, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.41, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.43, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.32, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.41, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.22, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.26, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.04, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  // ── TECHNOLOGY ACCESS ──
-  tech_highpenetration: {
-    label: 'High smartphone access economy',
-    tvPct: 52, tvMinPct: 14,
-    source: 'Ofcom Online Nation 2025 · Pew Research Mobile 2024 (91–97% penetration: US, UK, AUS, S.Korea)',
-    insight: 'Average of US, UK, AUS, South Korea. High penetration means always-on device is baseline. Social media browsing adds 1–1.5h on top of TV.',
-    gapQuote: '"The phone is never more than an arm\'s length away. The question of \'what shall I do?\' never stays open long enough to answer." — Ofcom Online Nation 2025',
-    closeCopy: 'In high-penetration economies, the phone has become the waiting-room default. The friction gap is not just about TV — it\'s about a device that is always present, always loaded with low-effort options.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:2.50, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.55, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.50, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.30, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.28, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.22, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.28, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.10, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  tech_mobilefirst: {
-    label: 'Mobile-first economy (first-gen internet)',
-    tvPct: 32, tvMinPct: 28,
-    source: 'GSMA Mobile Economy Report 2024 · DataReportal Digital 2024 (Sub-Saharan Africa, Southeast Asia)',
-    insight: 'Internet access arrived via smartphone, often skipping desktop/TV era. Social leisure still dominant. Digital default is emerging but not yet as entrenched.',
-    gapQuote: '"In Nigeria, your phone is your computer, your TV, your radio, and your community board — but going out is still the first choice." — GSMA qualitative research 2024',
-    closeCopy: 'Mobile-first economies are at an inflection point: the friction gap is about to be designed in by the same platforms that shaped Western defaults. The window to build different leisure infrastructure is now.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:0.90, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:1.10, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.35, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.55, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.18, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.28, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.38, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.26, color:'#06b6d4', type:'active'},
-    ]
-  },
-
-  tech_lowtech: {
-    label: 'Low tech access (rural / low-income)',
-    tvPct: 35, tvMinPct: 22,
-    source: 'India TUS 2024 · GSMA 2024 · Pew Smartphone Emerging Economies 2019',
-    insight: 'Without a smartphone as the default device, leisure patterns are more diverse and social. TV still dominant where available. Community and family leisure more common.',
-    gapQuote: '"When the phone isn\'t an option, you find other ways. You talk to people. You go outside." — Pew Research, Emerging Economies 2019',
-    closeCopy: 'Low-tech access reveals what leisure looks like before the smartphone default was designed in. It\'s more social, more physical — and in many ways, more aligned with what people say they enjoy.',
-    activities: [
-      {name:'TV & Streaming',    enjoyment:5.9,  hours:1.20, color:'#6366f1', type:'passive'},
-      {name:'Socializing',       enjoyment:6.1,  hours:0.90, color:'#f59e0b', type:'active'},
-      {name:'Games',             enjoyment:6.25, hours:0.20, color:'#10b981', type:'active'},
-      {name:'Sports & Exercise', enjoyment:6.1,  hours:0.45, color:'#ef4444', type:'active'},
-      {name:'Reading',           enjoyment:5.95, hours:0.20, color:'#8b5cf6', type:'active'},
-      {name:'Hobbies',           enjoyment:6.15, hours:0.30, color:'#ec4899', type:'active'},
-      {name:'Relaxing',          enjoyment:5.85, hours:0.50, color:'#94a3b8', type:'passive'},
-      {name:'Arts & Music',      enjoyment:6.0,  hours:0.25, color:'#06b6d4', type:'active'},
-    ]
-  },
+const GROUPS={
+  us_avg:{label:'Average US adult',tvPct:55,tvMinPct:12,source:'BLS ATUS 2024',insight:'Baseline — 2.8h TV, 0.3h sports per day.',gapQuote:'"High-flow activities require more initial motivation — work that pays off."',closeCopy:'A Leisure Menu of pre-selected activities lowers the entry cost when energy is low.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:2.80,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.60,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.50,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.30,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.30,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.20,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.30,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.10,color:VS.clay}]},
+  age_teen:{label:'Teens 15–19 (US)',tvPct:39,tvMinPct:38,source:'BLS ATUS 2024',insight:'Teens game most (1.24h/day). Sports highest of any age (0.65h).',gapQuote:'"In adolescence, screens offer identity proxies when self-directed activity feels uncertain."',closeCopy:'For teens, friction is about identity as much as energy.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.90,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.46,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:1.24,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.65,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.05,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.20,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.14,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.29,color:VS.clay}]},
+  age_student:{label:'University student 18–24',tvPct:36,tvMinPct:28,source:'BLS ATUS 2024 (20–24)',insight:'Free time is shadowed by academic guilt. Social leisure and gaming dominate.',gapQuote:'"I have so much free time technically — but it never feels really free." — r/college',closeCopy:'Students navigate guilt-laden leisure. The friction gap is partly psychological permission.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.60,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.80,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.95,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.45,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.12,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.25,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.22,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.21,color:VS.clay}]},
+  age_young:{label:'Young adults 25–34 (US)',tvPct:43,tvMinPct:10,source:'BLS ATUS 2024 (25–34: 3.64h/day)',insight:'Only 3.64h leisure/day. TV still dominant despite higher-rated alternatives.',gapQuote:'"Young adults navigate a new kind of time poverty — always-on work culture compressing the margins of life."',closeCopy:'Fragmented time is the barrier. A Leisure Menu matched to 20-minute windows helps.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.54,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.44,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.88,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.37,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.17,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.22,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.20,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.18,color:VS.clay}]},
+  age_parent:{label:'Parents 35–44 (US/AUS)',tvPct:52,tvMinPct:9,source:'BLS ATUS 2024 · ABS 2024',insight:'Only 3.15h/day. AUS: 49% of women 35–44 "always rushed". TV rises as energy depletes.',gapQuote:'"When you have 45 minutes after the kids sleep, you don\'t choose — you collapse." — r/Parenting',closeCopy:'Time confetti — 20 minutes here, 30 there — never feels like enough to start something.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.65,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.36,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.30,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.21,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.14,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.15,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.20,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.09,color:VS.clay}]},
+  age_midlife:{label:'Mid-life 45–64 (US)',tvPct:56,tvMinPct:9,source:'BLS ATUS 2024',insight:'Leisure recovers as caregiving eases, but TV surges — reaching 2.78h by 55–64.',gapQuote:'"I have more evenings free than at 35 — but spend more of them on the sofa." — r/Adulting',closeCopy:'Midlife offers a window to rebuild intentional leisure — but without structure the default expands.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:2.32,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.46,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.30,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.25,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.26,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.22,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.40,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.16,color:VS.clay}]},
+  age_retired:{label:'Retired 65–74 (US)',tvPct:60,tvMinPct:11,source:'BLS ATUS 2024 (6.22h/day)',insight:'6.22h/day but TV = 3.73h. Reading doubles compared to younger groups.',gapQuote:'"Retirement gave me time but took away the structure." — r/Retirement',closeCopy:'Retirees lose the social scaffolding that used to fill time. TV becomes a default companion.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:3.73,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.49,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.46,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.32,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.47,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.25,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.43,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.07,color:VS.clay}]},
+  age_elderly:{label:'Elderly 75+ (US)',tvPct:63,tvMinPct:10,source:'BLS ATUS 2024 (7.28h/day)',insight:'Most free time of any group — but TV = 4.39h (60%). Reading at 0.73h — highest of any age.',gapQuote:'"Most of my friends just watch TV. There has to be more." — r/Retirement',closeCopy:'For the elderly, friction is compounded by mobility, isolation, and depleted social infrastructure.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:4.39,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.49,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.37,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.29,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.73,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.25,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.60,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.16,color:VS.clay}]},
+  region_norway:{label:'Norway',tvPct:42,tvMinPct:32,source:'OECD · Our World in Data (369min/day)',insight:'369min/day — highest in OECD. Labour law + hygge culture protects leisure.',gapQuote:'"Friluftsliv — time in nature — is a baseline expectation of free time in Norway."',closeCopy:'Intentional leisure is a structural outcome. Labour protections remove the barrier before it forms.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.70,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.90,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.30,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.70,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.60,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.55,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.50,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.35,color:VS.clay}]},
+  region_uk:{label:'United Kingdom',tvPct:48,tvMinPct:18,source:'Ofcom Online Nation 2025',insight:'Avg 4h online/day, 60% smartphone. Social media is top activity for 16–24s.',gapQuote:'"I open my phone to check the time and it\'s an hour later." — Ofcom 2025',closeCopy:'In the UK, smartphone-mediated passive leisure is the primary friction point — not TV.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:2.40,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.70,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.40,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.40,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.40,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.30,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.35,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.15,color:VS.clay}]},
+  region_australia:{label:'Australia',tvPct:50,tvMinPct:20,source:'ABS Time Use 2024',insight:'ABS 2024: TV 62% participation, avg 2h 55min. 33% feel "always rushed".',gapQuote:'"One-third of Australians always or often feel rushed." — ABS 2024',closeCopy:'Despite more free time than the US, Australia shows the same TV default.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:2.55,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.65,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.45,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.45,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.35,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.28,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.35,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.12,color:VS.clay}]},
+  region_japan:{label:'Japan',tvPct:48,tvMinPct:10,source:'Japan Statistics Bureau 2021 · OECD',insight:'215min/day — one of lowest in OECD. Karoshi (death by overwork) culturally acknowledged.',gapQuote:'"疲れすぎて、何もできない。" (Too exhausted to do anything.) — r/japanlife',closeCopy:'In Japan, overwork removes time before the question of enjoyment arises.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.70,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.35,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.30,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.20,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.25,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.20,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.45,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.10,color:VS.clay}]},
+  region_southkorea:{label:'South Korea',tvPct:46,tvMinPct:11,source:'OECD · Pew Research 2024',insight:'Highest smartphone penetration globally. After 12-hour workdays, screen time dominates.',gapQuote:'"퇴근 후에는 아무것도 하기 싫어요." (After work, I don\'t want to do anything.)',closeCopy:'South Korea combines peak smartphone penetration with overwork culture — double friction.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.85,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.38,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.55,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.22,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.18,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.15,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.40,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.07,color:VS.clay}]},
+  region_mexico:{label:'Mexico',tvPct:41,tvMinPct:24,source:'Our World in Data · OECD (172min/day)',insight:'Only 172min/day. Social leisure (family, community) more resilient than digital.',gapQuote:'"En México el descanso es con familia, no con pantalla."',closeCopy:'Community values can partially resist the passive default even under economic pressure.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.18,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.69,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.25,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.28,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.15,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.18,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.30,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.10,color:VS.clay}]},
+  region_brazil:{label:'Brazil',tvPct:44,tvMinPct:26,source:'DataReportal 2024 (9.5h online/day)',insight:'9.5h online/day — highest globally. Yet social leisure (football, family) remains dominant.',gapQuote:'"No Brasil, a TV não acabou com o social. A gente ainda sai."',closeCopy:'Brazil shows a high-digital society can maintain social leisure norms when community culture is strong.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.90,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.80,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.40,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.40,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.15,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.20,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.30,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.15,color:VS.clay}]},
+  region_india:{label:'India',tvPct:38,tvMinPct:18,source:'India TUS 2024 · Pew Research 2019',insight:'Huge variation by state/income/urban vs rural. Rapid smartphone adoption creating new defaults.',gapQuote:'"Free time feels like time I should be using productively." — r/ABCDesis',closeCopy:'Leisure carries stigma in contexts shaped by scarcity. The guilt loop is cultural as well as structural.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.50,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.65,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.28,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.30,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.22,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.20,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.42,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.12,color:VS.clay}]},
+  region_nigeria:{label:'Nigeria',tvPct:25,tvMinPct:35,source:'GSMA Mobile Economy 2024',insight:'Mobile-first internet. Leisure is predominantly social and community-based.',gapQuote:'"Community leisure doesn\'t need activation energy — you\'re pulled in by the group."',closeCopy:'When community is the default, the friction gap is smaller. Design challenge: preserve this as smartphones expand.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:0.70,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:1.20,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.30,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.50,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.15,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.25,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.35,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.25,color:VS.clay}]},
+  region_sabbath:{label:'Shabbat observer (Jewish)',tvPct:5,tvMinPct:55,source:'Pew Research 2019 · My Jewish Learning',insight:'25 hours of tech-free structured rest weekly. Observers report lower anxiety and higher life satisfaction.',gapQuote:'"Shabbat is the practice of stopping — not because you\'ve finished, but because stopping has value." — My Jewish Learning',closeCopy:'When rest is structurally protected, the friction gap disappears. You don\'t decide whether to rest. You rest.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:0.10,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:1.80,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.10,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.40,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:1.00,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.30,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.90,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.40,color:VS.clay}]},
+  region_jumuah:{label:"Jumu'ah observer (Muslim)",tvPct:30,tvMinPct:30,source:'Pew Research Religion 2019',insight:"Friday Jumu'ah + five daily prayer pauses create structured micro-rest throughout the week.",gapQuote:'"After Jumu\'ah the afternoon belongs to family and rest. That\'s not negotiable." — r/islam',closeCopy:"Weekly and daily prayer structures create natural breaks from passive defaults — leisure woven into rhythm.",
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.20,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:1.00,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.35,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.35,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.40,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.28,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.55,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.20,color:VS.clay}]},
+  career_ft:{label:'Full-time worker (US)',tvPct:50,tvMinPct:10,source:'BLS ATUS 2024 (3.18h/weekday)',insight:'3.18h leisure/weekday. TV is 50% of that. Leisure becomes weekend-only.',gapQuote:'"After a full day I don\'t want to decide anything. I just want to not think." — r/povertyfinance',closeCopy:'The friction gap peaks on weekday evenings — exactly when cognitive resources are depleted.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.58,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.31,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.37,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.24,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.16,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.18,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.30,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.04,color:VS.clay}]},
+  career_lowwage:{label:'Low-wage worker <$840/wk',tvPct:56,tvMinPct:8,source:'BLS ATUS 2024 — earnings Q1',insight:'TV = 56% of weekday leisure. Cultural/physical leisure less accessible without income.',gapQuote:'"What am I going to do — go to a concert? I can\'t afford that." — r/povertyfinance',closeCopy:'The friction gap is compounded by cost. Many meaningful activities require money or transport.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.81,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.31,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.42,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.13,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.09,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.12,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.29,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.07,color:VS.clay}]},
+  career_highwage:{label:'High-wage worker $1,971+/wk',tvPct:47,tvMinPct:12,source:'BLS ATUS 2024 — earnings Q4',insight:'Least weekday time (3.09h) but better mix: more sport, reading, socializing.',gapQuote:'"I have the money and the time on paper — but I\'m still just scrolling." — r/productivity',closeCopy:'High income shifts the barrier from cost to cognitive depletion and always-on culture.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.47,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.33,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.31,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.33,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.19,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.18,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.17,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.11,color:VS.clay}]},
+  career_unemployed:{label:'Not employed (US)',tvPct:54,tvMinPct:11,source:'BLS ATUS 2024 (6.42h/day)',insight:'Most free time (6.42h) but 54% is TV. Without structure, passive defaults expand.',gapQuote:'"I have all the time in the world. I\'ve never felt more stuck." — r/povertyfinance',closeCopy:'More free time doesn\'t mean more meaningful leisure — without structure and purpose, defaults expand.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:3.45,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.59,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.71,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.40,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.46,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.30,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.46,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.05,color:VS.clay}]},
+  career_nodegree:{label:'No HS diploma (US)',tvPct:56,tvMinPct:8,source:'BLS ATUS 2024',insight:'TV = 56% (2.82h). Reading very low (0.08h). Relaxing high (0.91h) — fatigue-driven.',gapQuote:'"The library is free but I need a way to get there." — r/povertyfinance',closeCopy:'Education correlates with leisure quality — not intellect, but access to infrastructure and models.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:2.82,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.57,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.18,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.18,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.08,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.10,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.91,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.18,color:VS.clay}]},
+  career_degree:{label:"Bachelor's degree+ (US)",tvPct:48,tvMinPct:15,source:"BLS ATUS 2024 (3.99h/weekday)",insight:'More sport, reading, socializing. TV drops to 48% — still dominant but less so.',gapQuote:'"Even with a degree, Friday night I\'m still just on Netflix." — r/Adulting',closeCopy:"Education reduces the inversion's size but doesn't eliminate it — friction persists across all groups.",
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.90,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.41,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.43,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.32,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.41,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.22,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.26,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.04,color:VS.clay}]},
+  career_gig:{label:'Gig / precarious worker',tvPct:49,tvMinPct:14,source:'BLS ATUS 2024 (part-time) · Pew 2024',insight:'Irregular schedules fragment leisure unpredictably. Can\'t plan when you don\'t know when you\'re free.',gapQuote:'"I never know when I\'m working next. Planning anything feels pointless." — r/gigwork',closeCopy:'Gig workers face a unique friction: schedule uncertainty makes intention impossible to form.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:2.10,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.48,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.60,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.20,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.18,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.15,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.48,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.06,color:VS.clay}]},
+  tech_high:{label:'High smartphone access economy',tvPct:52,tvMinPct:14,source:'Ofcom 2025 · Pew Research 2024',insight:'Always-on device is baseline. Social media adds 1–1.5h on top of TV.',gapQuote:'"The phone is never more than an arm\'s length away." — Ofcom 2025',closeCopy:'In high-penetration economies, the phone is the waiting-room default — always present, always loaded.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:2.50,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.55,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.50,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.30,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.28,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.22,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.28,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.10,color:VS.clay}]},
+  tech_mobile:{label:'Mobile-first economy',tvPct:32,tvMinPct:28,source:'GSMA Mobile Economy 2024 · DataReportal 2024',insight:'Internet via smartphone, often skipping desktop era. Social leisure still dominant.',gapQuote:'"In Nigeria, your phone is your computer and TV — but going out is still the first choice." — GSMA 2024',closeCopy:'Mobile-first economies are at an inflection point. The window to build different leisure infrastructure is now.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:0.90,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:1.10,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.35,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.55,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.18,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.28,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.38,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.26,color:VS.clay}]},
+  tech_low:{label:'Low tech access',tvPct:35,tvMinPct:22,source:'India TUS 2024 · GSMA 2024 · Pew 2019',insight:'Without smartphone as default, leisure is more social, diverse, and physical.',gapQuote:'"When the phone isn\'t an option, you find other ways. You talk to people. You go outside." — Pew 2019',closeCopy:'Low-tech access reveals leisure before the smartphone default was designed in — more aligned with enjoyment.',
+    activities:[{name:'TV & Streaming',enjoyment:5.9,hours:1.20,color:'#6366f1'},{name:'Socializing',enjoyment:6.1,hours:0.90,color:VS.terracotta},{name:'Games',enjoyment:6.25,hours:0.20,color:VS.moss},{name:'Sports & Exercise',enjoyment:6.1,hours:0.45,color:'#ef4444'},{name:'Reading',enjoyment:5.95,hours:0.20,color:VS.sage},{name:'Hobbies',enjoyment:6.15,hours:0.30,color:'#ec4899'},{name:'Relaxing',enjoyment:5.85,hours:0.50,color:'#94a3b8'},{name:'Arts & Music',enjoyment:6.0,hours:0.25,color:VS.clay}]},
 };
 
-// ══════════════════════════════════════════════
-// ENGINE (same as original, driven by activeGroup)
-// ══════════════════════════════════════════════
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-let W, H, dpr;
-let activeGroupKey = 'us_avg';
-let activities = GROUPS.us_avg.activities;
+// ── ENGINE ──
+const cv=document.getElementById('c');
+const ctx=cv.getContext('2d');
+let W,H,dpr,activeGroupKey='us_avg',activities=GROUPS.us_avg.activities;
+const TOTAL_DOTS=300;
 
-function resize() {
-  dpr = window.devicePixelRatio || 1;
-  W = window.innerWidth; H = window.innerHeight;
-  canvas.width = W * dpr; canvas.height = H * dpr;
-  ctx.scale(dpr, dpr);
+function resize(){
+  dpr=window.devicePixelRatio||1;
+  W=window.innerWidth;H=window.innerHeight;
+  cv.width=W*dpr;cv.height=H*dpr;ctx.scale(dpr,dpr);
 }
 resize();
-window.addEventListener('resize', () => { resize(); computeTargets(); });
+window.addEventListener('resize',()=>{resize();computeTargets()});
 
-const TOTAL_DOTS = 300;
-
-function distribute(arr, key) {
-  const total = arr.reduce((s, a) => s + a[key], 0);
-  const raw = arr.map(a => (a[key] / total) * TOTAL_DOTS);
-  const floored = raw.map(Math.floor);
-  let rem = TOTAL_DOTS - floored.reduce((s, v) => s + v, 0);
-  const fracs = raw.map((v, i) => ({ i, f: v - floored[i] })).sort((a, b) => b.f - a.f);
-  for (let k = 0; k < rem; k++) floored[fracs[k].i]++;
-  return floored;
+function distribute(arr,key){
+  const tot=arr.reduce((s,a)=>s+a[key],0);
+  const raw=arr.map(a=>(a[key]/tot)*TOTAL_DOTS);
+  const fl=raw.map(Math.floor);
+  let rem=TOTAL_DOTS-fl.reduce((s,v)=>s+v,0);
+  raw.map((v,i)=>({i,f:v-fl[i]})).sort((a,b)=>b.f-a.f).forEach((x,k)=>{if(k<rem)fl[x.i]++});
+  return fl;
 }
+let enjoyDist=distribute(activities,'enjoyment');
+let realDist=distribute(activities,'hours');
 
-let enjoyDist = distribute(activities, 'enjoyment');
-let realDist  = distribute(activities, 'hours');
-
-// Legend
-function buildLegend() {
-  const el = document.getElementById('legend');
-  el.innerHTML = '';
-  activities.forEach(a => {
-    const d = document.createElement('div');
-    d.className = 'legend-item';
-    d.innerHTML = `<span class="legend-dot" style="background:${a.color}"></span>${a.name}`;
+function buildLegend(){
+  const el=document.getElementById('legend');el.innerHTML='';
+  activities.forEach(a=>{
+    const d=document.createElement('div');d.className='legend-item';
+    d.innerHTML=`<span class="legend-dot" style="background:${a.color}"></span>${a.name}`;
     el.appendChild(d);
   });
 }
 buildLegend();
 
-// Particles
-const particles = [];
-for (let i = 0; i < TOTAL_DOTS; i++) {
-  particles.push({
-    x: Math.random() * 800, y: Math.random() * 600,
-    tx: 400, ty: 300,
-    color: '#333', actIdx: 0,
-    radius: window.innerWidth < 600 ? 2.5 : 3.5,
-  });
-}
+const particles=[];
+for(let i=0;i<TOTAL_DOTS;i++) particles.push({x:Math.random()*800,y:Math.random()*600,tx:400,ty:300,color:'#E2D0B8',actIdx:0,radius:window.innerWidth<600?2.5:3.5});
+let currentScene=-1;
 
-let currentScene = -1;
-
-function switchGroup(key) {
-  activeGroupKey = key;
-  const g = GROUPS[key];
-  activities = g.activities;
-  enjoyDist = distribute(activities, 'enjoyment');
-  realDist  = distribute(activities, 'hours');
+function switchGroup(key){
+  activeGroupKey=key;const g=GROUPS[key];
+  activities=g.activities;
+  enjoyDist=distribute(activities,'enjoyment');realDist=distribute(activities,'hours');
   buildLegend();
-
-  // Update narrative text
-  document.getElementById('stat-pct').textContent = g.tvPct + '%';
-  document.getElementById('reality-body').innerHTML =
-    `of <strong style="color:#e8e4df">${g.label}</strong>'s evening is consumed by TV and streaming.`;
-  document.getElementById('reality-body2').innerHTML =
-    `Sports, hobbies, and arts share just ${g.tvMinPct}% of time — despite being rated more enjoyable.`;
-  document.getElementById('src3').textContent = g.source;
-  document.getElementById('src1').textContent = 'Enjoyment scale: 1–7 · UK Time Use Survey 2014–15 · Time data: ' + g.source;
-  document.getElementById('gap-quote').innerHTML = `<em>${g.gapQuote}</em>`;
-  document.getElementById('close-body').textContent = g.closeCopy;
-
-  // Source badge
-  document.getElementById('ctx-badge').innerHTML =
-    `<strong>${g.label}</strong><span class="ctx-insight">${g.insight}</span><br><span style="color:#2a2620">${g.source}</span>`;
-
-  // Re-trigger scene
-  const s = currentScene;
-  currentScene = -1;
-  setScene(s);
+  document.getElementById('stat-pct').textContent=g.tvPct+'%';
+  document.getElementById('reality-body').innerHTML=`of <strong>${g.label}'s</strong> evening is consumed by TV and streaming.`;
+  document.getElementById('reality-body2').innerHTML=`Sports, hobbies, and arts share just ${g.tvMinPct}% — despite being rated most enjoyable.`;
+  document.getElementById('src3').textContent=g.source;
+  document.getElementById('src1').textContent='Enjoyment 1–7 · UK Time Use Survey 2014–15 · Time: '+g.source;
+  document.getElementById('gap-quote').innerHTML=`<em>${g.gapQuote}</em>`;
+  document.getElementById('close-body').textContent=g.closeCopy;
+  document.getElementById('ctx-badge').innerHTML=`<strong>${g.label}</strong><span class="ctx-insight">${g.insight}</span>`;
+  const s=currentScene;currentScene=-1;setScene(s);
 }
 
-function assignParticles(dist) {
-  let idx = 0;
-  for (let a = 0; a < activities.length; a++) {
-    for (let d = 0; d < dist[a]; d++) {
-      if (idx < particles.length) {
-        particles[idx].actIdx = a;
-        particles[idx].color = activities[a].color;
-        idx++;
-      }
-    }
+function assignParticles(dist){
+  let idx=0;
+  for(let a=0;a<activities.length;a++) for(let d=0;d<dist[a];d++) if(idx<particles.length){particles[idx].actIdx=a;particles[idx].color=activities[a].color;idx++}
+}
+function computeTargets(){
+  const colW=W/activities.length,spacing=particles[0].radius*2.6,baseY=H-80;
+  const maxPerRow=Math.max(1,Math.floor((colW-10)/spacing));
+  const dist=currentScene<=1?enjoyDist:realDist;
+  const counts=new Array(activities.length).fill(0);
+  for(let i=0;i<particles.length;i++){
+    const a=particles[i].actIdx,n=counts[a];
+    const row=Math.floor(n/maxPerRow),pos=n%maxPerRow;
+    const rowW=Math.min(maxPerRow,dist[a]-row*maxPerRow)*spacing;
+    particles[i].tx=colW*a+colW/2-rowW/2+particles[i].radius+pos*spacing;
+    particles[i].ty=baseY-row*spacing;counts[a]++;
   }
 }
-
-function computeTargets() {
-  const colW = W / activities.length;
-  const spacing = particles[0].radius * 2.6;
-  const baseY = H - 80;
-  const maxPerRow = Math.max(1, Math.floor((colW - 10) / spacing));
-  const dist = currentScene <= 1 ? enjoyDist : realDist;
-  const counts = new Array(activities.length).fill(0);
-  for (let i = 0; i < particles.length; i++) {
-    const a = particles[i].actIdx;
-    const n = counts[a];
-    const row = Math.floor(n / maxPerRow);
-    const posInRow = n % maxPerRow;
-    const rowW = Math.min(maxPerRow, dist[a] - row * maxPerRow) * spacing;
-    const cx = colW * a + colW / 2;
-    const startX = cx - rowW / 2 + particles[i].radius;
-    particles[i].tx = startX + posInRow * spacing;
-    particles[i].ty = baseY - row * spacing;
-    counts[a]++;
+function setScene(s){
+  if(s===currentScene)return;currentScene=s;
+  const labelsEl=document.getElementById('colLabels');
+  const legendEl=document.getElementById('legend');
+  if(s===0){
+    for(let p of particles){p.tx=Math.random()*W;p.ty=Math.random()*H;p.color=`hsl(${25+Math.random()*40},${25+Math.random()*20}%,${58+Math.random()*12}%)`}
+    legendEl.classList.remove('visible');labelsEl.classList.remove('visible');
+    document.getElementById('ctx-badge').innerHTML='';
+  } else if(s===1){
+    assignParticles(enjoyDist);computeTargets();legendEl.classList.add('visible');
+    buildLabels(enjoyDist,'enjoyment');labelsEl.classList.add('visible');
+  } else if(s===2||s===3){
+    assignParticles(realDist);computeTargets();legendEl.classList.add('visible');
+    buildLabels(realDist,'hours');labelsEl.classList.add('visible');
+    const g=GROUPS[activeGroupKey];
+    document.getElementById('ctx-badge').innerHTML=`<strong>${g.label}</strong><span class="ctx-insight">${g.insight}</span>`;
+  } else if(s===4){
+    legendEl.classList.add('visible');labelsEl.classList.remove('visible');buildSlopeTargets();
+  } else if(s===5){
+    for(let p of particles){const angle=Math.random()*Math.PI*2,d=50+Math.random()*Math.min(W,H)*.35;p.tx=W/2+Math.cos(angle)*d;p.ty=H/2+Math.sin(angle)*d}
+    legendEl.classList.add('visible');labelsEl.classList.remove('visible');
   }
 }
-
-function setScene(s) {
-  if (s === currentScene) return;
-  currentScene = s;
-  const labelsEl = document.getElementById('colLabels');
-  const legendEl = document.getElementById('legend');
-  if (s === 0) {
-    for (let p of particles) {
-      p.tx = Math.random() * W; p.ty = Math.random() * H;
-      p.color = `hsl(${220 + Math.random() * 20},20%,${20 + Math.random() * 15}%)`;
-    }
-    legendEl.classList.remove('visible');
-    labelsEl.classList.remove('visible');
-    document.getElementById('ctx-badge').innerHTML = '';
-  } else if (s === 1) {
-    assignParticles(enjoyDist); computeTargets();
-    legendEl.classList.add('visible');
-    buildLabels(enjoyDist, 'enjoyment');
-    labelsEl.classList.add('visible');
-    const g = GROUPS[activeGroupKey];
-    document.getElementById('ctx-badge').innerHTML =
-      `<strong>${g.label}</strong><span class="ctx-insight">If enjoyment guided choices</span><br><span style="color:#2a2620">${g.source}</span>`;
-  } else if (s === 2 || s === 3) {
-    assignParticles(realDist); computeTargets();
-    legendEl.classList.add('visible');
-    buildLabels(realDist, 'hours');
-    labelsEl.classList.add('visible');
-    const g = GROUPS[activeGroupKey];
-    document.getElementById('ctx-badge').innerHTML =
-      `<strong>${g.label}</strong><span class="ctx-insight">${g.insight}</span><br><span style="color:#2a2620">${g.source}</span>`;
-  } else if (s === 4) {
-    legendEl.classList.add('visible');
-    labelsEl.classList.remove('visible');
-    buildSlopeTargets();
-    document.getElementById('ctx-badge').innerHTML =
-      `<strong>The intention–action gap</strong><span class="ctx-insight">Csikszentmihalyi & LeFevre, 1989</span>`;
-  } else if (s === 5) {
-    for (let p of particles) {
-      const angle = Math.random() * Math.PI * 2;
-      const dist = 50 + Math.random() * Math.min(W, H) * 0.35;
-      p.tx = W / 2 + Math.cos(angle) * dist;
-      p.ty = H / 2 + Math.sin(angle) * dist;
-    }
-    legendEl.classList.add('visible');
-    labelsEl.classList.remove('visible');
-    document.getElementById('ctx-badge').innerHTML =
-      `<strong>Research:</strong> Intentional Leisure & the Friction Gap, 2025`;
-  }
-}
-
-function buildLabels(dist, mode) {
-  const labelsEl = document.getElementById('colLabels');
-  labelsEl.innerHTML = '';
-  const colW = W / activities.length;
-  activities.forEach((a, i) => {
-    const div = document.createElement('div');
-    div.className = 'col-label';
-    div.style.width = colW + 'px';
-    const val = mode === 'hours' ? `${Math.round(dist[i])} min` : `${a.enjoyment}/7`;
-    div.innerHTML = `${a.name}<span class="time-val">${val}</span>`;
+function buildLabels(dist,mode){
+  const labelsEl=document.getElementById('colLabels');labelsEl.innerHTML='';
+  const colW=W/activities.length;
+  activities.forEach((a,i)=>{
+    const div=document.createElement('div');div.className='col-label';div.style.width=colW+'px';
+    div.innerHTML=`${a.name}<span class="time-val">${mode==='hours'?Math.round(dist[i])+' min':a.enjoyment+'/7'}</span>`;
     labelsEl.appendChild(div);
   });
 }
-
-function buildSlopeTargets() {
-  const byEnjoy = activities.map((a, i) => ({ i, v: a.enjoyment })).sort((a, b) => b.v - a.v);
-  const byTime  = activities.map((a, i) => ({ i, v: a.hours })).sort((a, b) => b.v - a.v);
-  const lx = W * 0.15, rx = W * 0.85;
-  const topY = H * 0.15, botY = H * 0.75;
-  const step = (botY - topY) / (activities.length - 1);
-  const enjoyRank = {}, timeRank = {};
-  byEnjoy.forEach((item, rank) => { enjoyRank[item.i] = rank; });
-  byTime.forEach((item, rank)  => { timeRank[item.i] = rank; });
-  let idx = 0;
-  for (let a = 0; a < activities.length; a++) {
-    const count = realDist[a];
-    const ly = topY + enjoyRank[a] * step;
-    const ry = topY + timeRank[a] * step;
-    for (let d = 0; d < count && idx < particles.length; d++) {
-      const t = count === 1 ? 0.5 : d / (count - 1);
-      particles[idx].tx = lx + (rx - lx) * t;
-      particles[idx].ty = ly + (ry - ly) * t;
-      particles[idx].actIdx = a;
-      particles[idx].color = activities[a].color;
-      idx++;
+function buildSlopeTargets(){
+  const byE=[...activities].map((a,i)=>({i,v:a.enjoyment})).sort((a,b)=>b.v-a.v);
+  const byT=[...activities].map((a,i)=>({i,v:a.hours})).sort((a,b)=>b.v-a.v);
+  const lx=W*.15,rx=W*.85,topY=H*.15,botY=H*.75,step=(botY-topY)/(activities.length-1);
+  const er={},tr={};byE.forEach((x,r)=>er[x.i]=r);byT.forEach((x,r)=>tr[x.i]=r);
+  let idx=0;
+  for(let a=0;a<activities.length;a++){
+    const count=realDist[a],ly=topY+er[a]*step,ry=topY+tr[a]*step;
+    for(let d=0;d<count&&idx<particles.length;d++){
+      const t=count===1?.5:d/(count-1);
+      particles[idx].tx=lx+(rx-lx)*t;particles[idx].ty=ly+(ry-ly)*t;
+      particles[idx].actIdx=a;particles[idx].color=activities[a].color;idx++;
     }
   }
 }
-
-// Scroll
-function handleScroll() {
-  const vh = window.innerHeight;
-  const sections = document.querySelectorAll('.section');
-  let activeScene = 0;
-  sections.forEach((sec, i) => {
-    const rect = sec.getBoundingClientRect();
-    if (rect.top < vh * 0.5 && rect.bottom > vh * 0.3) activeScene = i;
-  });
-  setScene(activeScene);
-  sections.forEach((sec, i) => {
-    const tb = document.getElementById('tb' + i);
-    if (!tb) return;
-    const rect = sec.getBoundingClientRect();
-    tb.classList.toggle('visible', rect.top < vh * 0.65 && rect.bottom > vh * 0.35);
-  });
-  document.getElementById('scrollHint').classList.toggle('visible', window.scrollY < 50);
+function handleScroll(){
+  const vh=window.innerHeight,sections=document.querySelectorAll('.section');
+  let as=0;sections.forEach((sec,i)=>{const r=sec.getBoundingClientRect();if(r.top<vh*.5&&r.bottom>vh*.3)as=i});
+  setScene(as);
+  sections.forEach((sec,i)=>{const tb=document.getElementById('tb'+i);if(!tb)return;const r=sec.getBoundingClientRect();tb.classList.toggle('visible',r.top<vh*.65&&r.bottom>vh*.35)});
+  document.getElementById('scrollHint').classList.toggle('visible',window.scrollY<50);
 }
-window.addEventListener('scroll', handleScroll, { passive: true });
+window.addEventListener('scroll',handleScroll,{passive:true});
 
-// Animation loop
-function animate() {
-  ctx.clearRect(0, 0, W, H);
-  for (let p of particles) {
-    p.x += (p.tx - p.x) * 0.04;
-    p.y += (p.ty - p.y) * 0.04;
-    p.x += (Math.random() - 0.5) * 0.15;
-    p.y += (Math.random() - 0.5) * 0.15;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-    ctx.fillStyle = p.color;
-    ctx.globalAlpha = 0.85;
-    ctx.fill();
+function animate(){
+  ctx.clearRect(0,0,W,H);
+  for(let p of particles){
+    p.x+=(p.tx-p.x)*.04;p.y+=(p.ty-p.y)*.04;
+    p.x+=(Math.random()-.5)*.12;p.y+=(Math.random()-.5)*.12;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.radius,0,Math.PI*2);
+    ctx.fillStyle=p.color;ctx.globalAlpha=.85;ctx.fill();
   }
-  ctx.globalAlpha = 1;
-  if (currentScene === 4) {
-    const lx = W * 0.15, rx = W * 0.85;
-    const topY = H * 0.15, botY = H * 0.75;
-    const step = (botY - topY) / (activities.length - 1);
-    const byEnjoy = activities.map((a, i) => ({ i, v: a.enjoyment })).sort((a, b) => b.v - a.v);
-    const byTime  = activities.map((a, i) => ({ i, v: a.hours  })).sort((a, b) => b.v - a.v);
-    ctx.font = `${Math.min(12, W * 0.018)}px Inter,sans-serif`;
-    ctx.fillStyle = '#5a5650'; ctx.textAlign = 'right';
-    ctx.fillText('Ranked by enjoyment →', lx - 8, topY - 16);
-    ctx.fillStyle = '#5a5650'; ctx.textAlign = 'left';
-    ctx.fillText('← Ranked by time spent', rx + 8, topY - 16);
-    byEnjoy.forEach((item, rank) => {
-      const y = topY + rank * step;
-      ctx.textAlign = 'right';
-      ctx.fillStyle = activities[item.i].color;
-      ctx.globalAlpha = 0.7;
-      ctx.fillText(activities[item.i].name, lx - 10, y + 4);
-    });
-    byTime.forEach((item, rank) => {
-      const y = topY + rank * step;
-      ctx.textAlign = 'left';
-      ctx.fillStyle = activities[item.i].color;
-      ctx.globalAlpha = 0.7;
-      ctx.fillText(activities[item.i].name, rx + 10, y + 4);
-    });
-    ctx.globalAlpha = 1;
+  ctx.globalAlpha=1;
+  if(currentScene===4){
+    const lx=W*.15,rx=W*.85,topY=H*.15,botY=H*.75,step=(botY-topY)/(activities.length-1);
+    const byE=[...activities].map((a,i)=>({i,v:a.enjoyment})).sort((a,b)=>b.v-a.v);
+    const byT=[...activities].map((a,i)=>({i,v:a.hours})).sort((a,b)=>b.v-a.v);
+    ctx.font=`500 ${Math.min(12,W*.016)}px Inter,sans-serif`;
+    ctx.fillStyle=VS.moss;ctx.textAlign='right';ctx.fillText('Ranked by enjoyment →',lx-8,topY-14);
+    ctx.fillStyle=VS.clay;ctx.textAlign='left';ctx.fillText('← Ranked by time spent',rx+8,topY-14);
+    byE.forEach((item,rank)=>{const y=topY+rank*step;ctx.textAlign='right';ctx.fillStyle=activities[item.i].color;ctx.globalAlpha=.8;ctx.fillText(activities[item.i].name,lx-10,y+4)});
+    byT.forEach((item,rank)=>{const y=topY+rank*step;ctx.textAlign='left';ctx.fillStyle=activities[item.i].color;ctx.globalAlpha=.8;ctx.fillText(activities[item.i].name,rx+10,y+4)});
+    ctx.globalAlpha=1;
   }
   requestAnimationFrame(animate);
 }
-
-// Dropdown
-document.getElementById('group-select').addEventListener('change', e => {
-  switchGroup(e.target.value);
-});
-
-// Start
-document.getElementById('startBtn').addEventListener('click', () => {
-  const ob = document.getElementById('onboarding');
-  ob.style.opacity = '0';
-  ob.style.transition = 'opacity .6s';
-  setTimeout(() => {
-    ob.style.display = 'none';
-    document.getElementById('group-picker').style.display = 'flex';
-  }, 600);
-  setScene(0);
-  document.getElementById('scrollHint').classList.add('visible');
-  document.getElementById('tb0').classList.add('visible');
-  switchGroup('us_avg');
+document.getElementById('group-select').addEventListener('change',e=>switchGroup(e.target.value));
+document.getElementById('startBtn').addEventListener('click',()=>{
+  const ob=document.getElementById('onboarding');
+  ob.style.opacity='0';ob.style.transition='opacity .6s';
+  setTimeout(()=>{ob.style.display='none';document.getElementById('group-picker').style.display='flex'},600);
+  setScene(0);document.getElementById('scrollHint').classList.add('visible');
+  document.getElementById('tb0').classList.add('visible');switchGroup('us_avg');
 });
 animate();
 </script>
